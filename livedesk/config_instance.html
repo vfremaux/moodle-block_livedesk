@@ -1,0 +1,149 @@
+<?php
+    $usehtmleditor = can_use_html_editor();
+
+    $text = isset($this->config->text) ? $this->config->text : '';
+    if (empty($this->instance->pinned) and $this->instance->pagetype !== 'course-view') {
+        $text = clean_text($text, FORMAT_HTML);
+    }
+    
+    if (isset($this->config->block_livedesk_resolving_post_release)){
+    	$configpostrelease = $this->config->block_livedesk_resolving_post_release;
+    } else {
+    	$configpostrelease = @$CFG->block_livedesk_resolving_post_release;
+    }
+    
+    if (isset($this->config->block_livedesk_resolving_post_release)){
+    	$configattenderrelease = $this->config->block_livedesk_attendee_release_time;
+    } else {
+    	$configattenderrelease = @$CFG->block_livedesk_attendee_release_time;
+    }
+    
+    if (isset($this->config->block_livedesk_resolving_post_release)){
+    	$configstackovertime = $this->config->block_livedesk_stack_over_time;
+    } else {
+    	$configstackovertime = @$CFG->block_livedesk_stack_over_time;
+    }
+
+    if (isset($this->config->block_livedesk_desk_service_timerange_start)){
+    	$configservicestart = $this->config->block_livedesk_desk_service_timerange_start;
+    } else {
+    	$configservicestart = @$CFG->block_livedesk_desk_service_timerange_start;
+    }    
+
+    if (isset($this->config->block_livedesk_desk_service_timerange_end)){
+    	$configserviceend = $this->config->block_livedesk_desk_service_timerange_end;
+    } else {
+    	$configserviceend = @$CFG->block_livedesk_desk_service_timerange_end;
+    }
+?>
+
+<table cellpadding="9" cellspacing="0">
+<tr valign="top">
+    <td align="right"><?php print_string('block_livedesk_resolving_post_release', 'block_livedesk'); ?>:</td>
+    <td><input type="text" name="block_livedesk_resolving_post_release" size="30" value="<?php echo $configpostrelease ?>" /> 
+    <label style="font-size: 11px;">(<?php print_string('block_livedesk_resolving_post_release_comment', 'block_livedesk'); ?>)</td>
+</tr>
+
+<tr valign="top">
+    <td align="right"><?php print_string('block_livedesk_attendee_release_time', 'block_livedesk'); ?>:</td>
+    <td><input type="text" name="block_livedesk_attendee_release_time" size="30" value="<?php echo $configattenderrelease ?>" /> 
+    <label style="font-size: 11px;">(<?php print_string('block_livedesk_attendee_release_time_comment', 'block_livedesk'); ?>)</label></td>
+</tr>
+
+<tr valign="top">
+    <td align="right"><?php print_string('block_livedesk_stack_over_time', 'block_livedesk'); ?>:</td>
+    <td><input type="text" name="block_livedesk_stack_over_time" size="30" value="<?php echo $configstackovertime ?>" /> 
+    <label style="font-size: 11px;">(<?php print_string('block_livedesk_stack_over_time_comment', 'block_livedesk'); ?>)
+    </label>
+    </td>
+</tr>
+
+<tr valign="top">
+    <td align="right"><?php print_string('block_livedesk_desk_service_timerange_start', 'block_livedesk'); ?>:</td>
+    <td><input type="text" name="block_livedesk_desk_service_timerange_start" size="30" value="<?php echo $configservicestart ?>" /> 
+    <label style="font-size: 11px;">(<?php print_string('block_livedesk_desk_service_timerange_start_comment', 'block_livedesk'); ?>)
+    </label>
+    </td>
+</tr>
+
+<tr valign="top">
+    <td align="right"><?php print_string('block_livedesk_desk_service_timerange_end', 'block_livedesk'); ?>:</td>
+    <td><input type="text" name="block_livedesk_desk_service_timerange_end" size="30" value="<?php echo $configserviceend ?>" /> 
+    <label style="font-size: 11px;">(<?php print_string('block_livedesk_desk_service_timerange_end_comment', 'block_livedesk'); ?>)<label style="font-size: 10px;">
+    </td>
+</tr>
+
+<tr>
+	<td align="right"><?php print_string('livedeskref', 'block_livedesk') ?></td>
+	<td><?php print_reference_pluginsselect($this->instance->id); ?></td>
+</tr>
+
+<tr>
+	<td></td>
+	<td>
+<?php
+	$location = $CFG->wwwroot."/blocks/livedesk/edit.php?livedeskid=0";
+	
+	$system_context = get_context_instance(CONTEXT_SYSTEM,1);
+	if(has_capability('block/livedesk:createlivedesk', $system_context)){ 
+		print('<input type="button" name="create_new_instance" value="'.get_string('createnewinstance', 'block_livedesk').'" onClick="window.location=\''.$location.'\'"  />');
+	}
+?>
+	</td>
+</tr>
+<tr>
+    <td colspan="3" align="center">
+    <input type="submit" value="<?php print_string('savechanges') ?>" /></td>
+</tr>
+</table>
+
+<?php 
+if ($usehtmleditor) {
+  use_html_editor(); 
+}
+
+/**
+* prints the plugin selector
+*/
+function print_reference_pluginsselect($blockid){
+    
+    //get existing reference 
+
+    $reference = get_record('block_livedesk_blocks', 'blockid', $blockid);
+    $livedesk_instanceid = null;
+    if(@$reference){
+     	$livedesk_instanceid = $reference->livedeskid;
+    }
+
+	/*   
+    if(!empty($livedesk_instances)){
+     	$select = "<select name=\"livedesk_instance\">";
+    	foreach($livedesk_instances as $instance){
+       		$select .= "<option value=\"".$instance->id."\" ".(($instance->id==$livedesk_instanceid)?' selected':'')." >".$instance->name."</option>"; 
+    	}
+    	$select .= "</select>";
+    } else {    
+    	$select = notify(get_string('noreference', 'block_livedesk'), 'notifyproblem', 'left', true);
+    }
+    print($select);
+    */
+
+    $livedeskinstancesmenu = get_records_menu('block_livedesk_instance', '', '', 'id,name');
+
+	if ($livedeskinstancesmenu){
+		choose_from_menu($livedeskinstancesmenu, 'livedesk_instance', $livedesk_instanceid);
+	} else {
+		notify(get_string('noreference', 'block_livedesk'), 'notifyproblem', 'left');
+	}
+}
+
+/**
+*
+*
+*/  
+function get_livedesk_type(){
+}
+  
+  
+
+?>
