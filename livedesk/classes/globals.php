@@ -8,7 +8,7 @@
                         'opened'=>'mail-open-document.png',
                         'answered'=>'mail-reply.png',
                         'locked'=>'locked_mail.png',
-                        'discaded'=>'discard_mail.png'
+                        'discarded'=>'discard_mail.png'
   );
   
   //post status

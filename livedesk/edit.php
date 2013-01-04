@@ -18,8 +18,9 @@
   	require_once('livedesk_form.php');
   
   	$livedeskid = required_param('livedeskid', PARAM_INT); // 0 creates a new one
+    $bid = optional_param('bid', null, PARAM_INT);
   	$courseid = optional_param('course', 1, PARAM_INT);
-
+          
 	// checking course
 	  
   	$course = get_record('course', 'id', $courseid);
@@ -77,12 +78,18 @@
           	foreach($data->pluginids as $pluginid) {             
               	$livedesk_con = new stdClass;
               	$livedesk_con->livedeskid = $livedeskid;
-              	$livedesk_con->plugininstance = $pluginid ;
+              	$livedesk_con->cmid = $pluginid ;
               	insert_record('block_livedesk_modules', $livedesk_con);
           	}
       	}
-
-  		$url = $CFG->wwwroot.'/blocks/livedesk/manage.php?course='.$course->id;
+        if($bid)
+        {
+         $url = $CFG->wwwroot.'/blocks/livedesk/run.php?bid='.$bid;   
+        }
+        else{
+         $url = $CFG->wwwroot.'/blocks/livedesk/manage.php?course='.$course->id;   
+        }
+  	
   		redirect($url);
       	exit;
   	}
@@ -95,6 +102,7 @@
   	} 
   
    $data->livedeskid = $livedeskid;
+   $data->bid = $bid;
    $livedeskform->set_data($data);
    print($livedeskform->display());  
 

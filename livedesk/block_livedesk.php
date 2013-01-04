@@ -28,7 +28,7 @@ class block_livedesk extends block_base {
 
     function init() {
         $this->title = get_string('pluginname', 'block_livedesk');
-        $this->version = 2012112015;
+        $this->version = 2013010400;
         $this->cron = 1;
     }
 
@@ -237,7 +237,7 @@ class block_livedesk extends block_base {
 				 	fd.forum = cm.instance AND 
 				 	fd.id = new.discussion ),
 				 'new',
-				 now(),
+				 UNIX_TIMESTAMP(now()),
 				 0,0,0,0,0,10,0,0,0)
 		";
 		
@@ -253,7 +253,7 @@ class block_livedesk extends block_base {
 				cmid = (SELECT 
 					cm.id 
 				 FROM 
-				 	{$CFG->prefix}_course_modules cm, 
+				 	{$CFG->prefix}course_modules cm, 
 				 	{$CFG->prefix}modules m
 				 WHERE 
 				 	cm.module = m.id AND 

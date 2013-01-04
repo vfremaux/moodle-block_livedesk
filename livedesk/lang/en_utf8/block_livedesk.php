@@ -41,10 +41,10 @@ $string['block_livedesk_attendee_release_time'] = 'Attendee Release Time' ;
 $string['block_livedesk_attendee_release_time_comment'] = 'An amount of time an attender will NOT be solicited after having attended a post.' ;
 $string['block_livedesk_stack_over_time'] = 'Stack over time' ;
 $string['block_livedesk_stack_over_time_comment'] = 'Date/time before which no unattended messages are considered. This is to save attenders from persistant popup raise on highly used forum tracks.' ;
-$string['block_livedesk_desk_service_timerange_start'] = 'Desk service start min' ;
-$string['block_livedesk_desk_service_timerange_start_comment'] = 'Opening time of the desk service.' ;
-$string['block_livedesk_desk_service_timerange_end'] = 'Desk service end time' ;
-$string['block_livedesk_desk_service_timerange_end_comment'] = 'Closing time of the desk service.' ;
+$string['block_livedesk_service_timerange_start'] = 'Desk service start min' ;
+$string['block_livedesk_service_timerange_start_comment'] = 'Opening time of the desk service.' ;
+$string['block_livedesk_service_timerange_end'] = 'Desk service end time' ;
+$string['block_livedesk_service_timerange_end_comment'] = 'Closing time of the desk service.' ;
 
 $string['adddeskinstances'] = '+ Create new instance';
 $string['blockname'] = 'LiveDesk';
@@ -87,8 +87,13 @@ $string['instance_notbounded_to_livedesk'] = 'This block is currently unbounded 
 $string['invalid_livedesk'] = 'Invalid livedesk instance';
 $string['reply'] = 'Reply';
 $string['discard'] = 'Discard';
+$string['confirmdiscard'] = 'Confirm discard';
+$string['discard_before'] = 'Discard messages before...';
+$string['discard_date'] = 'Discard date';
+$string['discard_before_txt'] = 'Discard messages before the following date';
 $string['email_user'] = 'Send a message to user';
 $string['newmessage'] = 'New message';
+$string['manage_livedesks'] = 'Manage Livedesks';
 
 // statistics
 

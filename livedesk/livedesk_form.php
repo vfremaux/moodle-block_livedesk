@@ -25,6 +25,7 @@ class livedesk_form extends moodleform {
         $mform->addElement('htmleditor', 'livedeskdescription', get_string('livedeskdescription', 'block_livedesk'));
         $mform->addElement('html', $this->get_monitoredplugins_list());
         $mform->addElement('hidden', 'livedeskid');
+        $mform->addElement('hidden', 'bid');
         
         $this->add_action_buttons();
         
@@ -45,11 +46,11 @@ class livedesk_form extends moodleform {
       	$livedeskid = required_param('livedeskid', PARAM_INT);
       	$selected_plugins_arr = array();
       	if($livedeskid != 0){
-      		$monitoredplugins = get_records('block_livedesk_modules','livedeskid',$livedeskid);
+      		$monitoredplugins = get_records('block_livedesk_modules', 'livedeskid', $livedeskid);
      
       		if($monitoredplugins){
             	foreach($monitoredplugins as $plugin){
-                	$selected_plugins_arr[]=$plugin->plugininstance;
+                	$selected_plugins_arr[] = $plugin->cmid;
             	}
         	}
       	}
@@ -91,17 +92,17 @@ class livedesk_form extends moodleform {
                 }
                 
                 foreach ($plugins as $plugin){
-                    if(in_array($plugin->instance, $selected_plugins_arr)){
+                    if(in_array($plugin->id, $selected_plugins_arr)){
                     	$checked = " checked='checked' ";    
                     } else {
                     	$checked = "";    
                     }
                     
                     $table .= "<div style='padding-left:5px;'>
-                    <input type='checkbox' name='pluginids[]' ".$checked." value='".$plugin->instance."' />
+                    <input type='checkbox' name='pluginids[]' ".$checked." value='".$plugin->id."' />
                     ".$plugin->name.'</div>';
                 }
-                 $table.='</div>';//course div
+                 $table .= '</div>';//course div
             }
         }
 

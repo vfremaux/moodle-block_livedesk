@@ -1,4 +1,4 @@
-<?php // $Id: reply.php,v 1.5 2012-12-30 22:28:54 vf Exp $
+<?php // $Id: reply.php,v 1.6 2013-01-03 13:02:02 vf Exp $
 
 /**
  * reply.php
@@ -23,7 +23,7 @@
     $reply   		= optional_param('reply', 0, PARAM_INT);
     $replydone   	= optional_param('replydone', 0, PARAM_INT);
     $forum   		= optional_param('forum', 0, PARAM_INT);
-    $plugininstance = optional_param('plugininstance', 0, PARAM_INT);
+    $cmid   		= optional_param('cmid', 0, PARAM_INT);
     $edit    		= optional_param('edit', 0, PARAM_INT);
     $delete  		= optional_param('delete', 0, PARAM_INT);
     $prune   		= optional_param('prune', 0, PARAM_INT);
@@ -88,9 +88,10 @@
         print(get_string('message_sent','block_livedesk'));
         exit;        
     }
-   
+
+	// NEW LIVEDESK   
     // lock the message temporarily
-    $queue_rec = get_record('block_livedesk_queue', 'itemid', $reply, 'plugininstance', $plugininstance);
+    $queue_rec = get_record('block_livedesk_queue', 'itemid', $reply, 'cmid', $cmid);
     
     // check record already locked.
     if($queue_rec->locked == 1 && ($queue_rec->lockedby != $USER->id)){
@@ -102,6 +103,8 @@
     $queue_rec->locktime = time() ; 
     $queue_rec->lockedby = $USER->id; 
     update_record('block_livedesk_queue', addslashes_object($queue_rec));
+
+	// /NEW
         
     if (!empty($forum)) {      // User is starting a new discussion in a forum
         if (! $forum = get_record('forum', 'id', $forum)) {

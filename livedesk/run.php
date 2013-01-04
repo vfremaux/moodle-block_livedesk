@@ -120,15 +120,11 @@
     
     require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/themes/default.js' );
  
-    require_js($CFG->wwwroot.'/blocks/livedesk/js/init.php' );
-
     $strtitle = get_string('livedesk', 'livedesk');
     require_login();
     
     $system_context = get_context_instance(CONTEXT_SYSTEM);
     
-    $course = get_record('course','id',$courseid);
-        
    /* 
     $PAGE->set_pagelayout('plain');
     $PAGE->set_context($system_context);
@@ -150,6 +146,9 @@
     global $NOJQUERY;
     $NOJQUERY = true;
     print_header();
+
+	// unfortunately not capable to use require_js here due to the CGI parameter
+    echo "<script src=\"{$CFG->wwwroot}/blocks/livedesk/js/init.php?id={$courseid}\" ></script>";
     
    // print('<div class="header">');
     print('<div class="headerlogo" >
@@ -169,8 +168,11 @@
     print('</div>');
     print('<div id="onlineuserscont" width="100%" height="100%" style = "background-color:white;"></div>  ');
     print('<div id="plugins" width="100%" height="100%" style = "background-color:white;"></div>  ');
+    
+       $cmd = "<a href=\"{$CFG->wwwroot}/blocks/livedesk/edit.php?bid=".$bid."&livedeskid={$livedeskid}\"><img src=\"{$CFG->pixpath}/t/edit.gif\"></a>";
     print('<div id="livedesk_info" width="100%" height="100%" style = "background-color:white;">
-    <b>'.$livedesk->name.'</b>
+    <b>'.$livedesk->name.'</b> '.$cmd.'
+    
     </div>  ');
     
     print('</div>');

@@ -29,7 +29,10 @@ $string['livedesk:runlivedesk'] = 'Peut assister les utilisateurs';
 $string['livedesk:createlivedesk'] = 'Peut créer un centre support';
 $string['livedesk:managelivedesk'] = 'Peut modifier un centre support';
 $string['livedesk:deletelivedesk'] = 'Peut détruire un centre support';
- 
+$string['livedesk:viewinstancestatistics'] = 'Peut voir les statistiques d\'instance';
+$string['livedesk:viewuserstatistics'] = 'Peut voir les statistiques des opérateurs';
+$string['livedesk:viewlivedeskstatistics'] = 'Peut voir les statistiques générales';
+
 //admin settings 
 
 $string['block_livedesk_resolving_post_release'] = 'Temps de relâchement d\'un post en cours' ;
@@ -84,6 +87,10 @@ $string['reply'] = 'Répondre dans le forum';
 $string['discard'] = 'Ignorer';
 $string['email_user'] = 'Envoyer un message à l\'auteur';
 $string['newmessage'] = 'Nouveau message';
+$string['discard_before'] = 'Ignorer les messages avant...';
+$string['discard_date'] = 'Date';
+$string['discard_before_txt'] = 'Ignorer tous les messages avant cette date';
+$string['confirmdiscard'] = 'Confirmer';
 
 // statistics
 

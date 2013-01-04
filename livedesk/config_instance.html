@@ -24,17 +24,19 @@
     	$configstackovertime = @$CFG->block_livedesk_stack_over_time;
     }
 
-    if (isset($this->config->block_livedesk_desk_service_timerange_start)){
-    	$configservicestart = $this->config->block_livedesk_desk_service_timerange_start;
+    if (isset($this->config->block_livedesk_service_timerange_start)){
+    	$configservicestart = $this->config->block_livedesk_service_timerange_start_m * 3600 + $this->config->block_livedesk_service_timerange_start_h * 60 ;
     } else {
-    	$configservicestart = @$CFG->block_livedesk_desk_service_timerange_start;
+    	$configservicestart = @$CFG->block_livedesk_service_timerange_start_h * 3600 + @$CFG->block_livedesk_service_timerange_start_h * 60;
     }    
+    echo $configservicestart.'<br/>';
 
-    if (isset($this->config->block_livedesk_desk_service_timerange_end)){
-    	$configserviceend = $this->config->block_livedesk_desk_service_timerange_end;
+    if (isset($this->config->block_livedesk_service_timerange_end)){
+    	$configserviceend = $this->config->block_livedesk_service_timerange_end_m * 3600 + $this->config->block_livedesk_service_timerange_end_h * 60 ;
     } else {
-    	$configserviceend = @$CFG->block_livedesk_desk_service_timerange_end;
+    	$configserviceend = @$CFG->block_livedesk_service_timerange_end_h * 3600 + @$CFG->block_livedesk_service_timerange_end_h * 60;
     }
+    echo $configserviceend;
 ?>
 
 <table cellpadding="9" cellspacing="0">
@@ -60,7 +62,10 @@
 
 <tr valign="top">
     <td align="right"><?php print_string('block_livedesk_desk_service_timerange_start', 'block_livedesk'); ?>:</td>
-    <td><input type="text" name="block_livedesk_desk_service_timerange_start" size="30" value="<?php echo $configservicestart ?>" /> 
+    <td> 
+    	<?php
+    	print_time_selector('block_livedesk_desk_service_timerange_start_h', 'block_livedesk_desk_service_timerange_start_h', 10, $configservicestart);
+    	?>
     <label style="font-size: 11px;">(<?php print_string('block_livedesk_desk_service_timerange_start_comment', 'block_livedesk'); ?>)
     </label>
     </td>
@@ -68,7 +73,10 @@
 
 <tr valign="top">
     <td align="right"><?php print_string('block_livedesk_desk_service_timerange_end', 'block_livedesk'); ?>:</td>
-    <td><input type="text" name="block_livedesk_desk_service_timerange_end" size="30" value="<?php echo $configserviceend ?>" /> 
+    <td> 
+    	<?php
+    	print_time_selector('block_livedesk_desk_service_timerange_end_h', 'block_livedesk_desk_service_timerange_end_m', 10, $configserviceend);
+    	?>
     <label style="font-size: 11px;">(<?php print_string('block_livedesk_desk_service_timerange_end_comment', 'block_livedesk'); ?>)<label style="font-size: 10px;">
     </td>
 </tr>

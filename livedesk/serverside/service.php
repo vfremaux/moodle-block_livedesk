@@ -59,7 +59,7 @@
 	    
 	    case 'get_monitored_plugins':
 	     
-		    $livedeskid  = optional_param('livedeskid', null, PARAM_INT);
+		    $livedeskid  = required_param('livedeskid', PARAM_INT);
 		    $output = livedesk::get_monitored_plugins($livedeskid);
 		    
 		    break  ;
@@ -67,9 +67,16 @@
 	    case 'unlock_item':
 	     
 		    $livedeskid  = optional_param('livedeskid', null, PARAM_INT);
-		    $itemid  = optional_param('itemid', null, PARAM_INT);
+		    $itemid  = optional_param('messageid', null, PARAM_INT);
 		    livedesk::unlock_message($itemid);
 		    exit;
+         case 'discard_post':
+         
+          $itemid  = optional_param('messageid', null, PARAM_INT);
+          $ddate  = optional_param('date', null, PARAM_TEXT);
+          livedesk::livedesk_discard_post($itemid,$ddate);
+          break;
+         
 
     }
 

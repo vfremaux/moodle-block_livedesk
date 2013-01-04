@@ -50,7 +50,7 @@ class livedesk {
           	ON 
           		u.id = q.lockedby 
           	WHERE 
-          		cmid IN ('{$monitored_plugins_cs}')  
+          		cmid IN ('{$monitored_plugins_cs}')
           	ORDER BY 
           		timecreated DESC
         ";
@@ -68,12 +68,15 @@ class livedesk {
 	    		$moduleinstance = get_record($module->name, 'id', $entry->instance);
 	    		$entry->seen = livedesk::livedesk_get_seen_information($module, $moduleinstance, $entry->itemid);
 				$caller = get_record('user', 'id', $entry->callerid);
-				$classes = '';
+				$classes = $entry->mstatus;
 				$bg_color = '';  
+				if ($entry->mstatus == 'answered'){
+					$bg_color = '#DDF0FF';  
+				}
 				if ($entry->locked){
 					$icon = $STATUS_ARRAY['locked'];  
 					$bg_color = '#ffc0c0';  
-					$classes = ' locked';
+					$classes .= ' locked';
 				} else {
 					$icon = $STATUS_ARRAY[$entry->mstatus]; 
 				}
@@ -84,19 +87,26 @@ class livedesk {
 				}
                       
 				$message = "<label class='".$classes."'>".substr($entry->message,0,30)."</label>";
+				$modname = get_string('modulename', $module->name);
+				$modpix = "<img src=\"{$CFG->pixpath}/mod/{$module->name}/icon.gif\" title=\"$modname\" />"; 
+				
+				$dimmedpre = ($entry->mstatus == 'discarded') ? '<div class="dimmed">' : '' ;
+				$dimmedpost = ($entry->mstatus == 'discarded') ? '</div>' : '' ;
                       
 				$row =  '<row id="liveentry_'.$entry->id.'" bgColor="'.$bg_color.'"> 
 				<userdata name="status" >'.$entry->mstatus.'</userdata>
 				<userdata name="notified">'.$entry->notified.'</userdata>
+				<userdata name="messageid">'.$entry->id.'</userdata>
 				<userdata name="itemid">'.$entry->itemid.'</userdata>
-				<userdata name="plugininstance">'.$entry->instance.'</userdata>
-				<cell  bgColor="'.$bg_color.'"><![CDATA['.$entry->id.']]>    </cell>  
-				<cell  bgColor="'.$bg_color.'"><![CDATA[<img src="pix/'.$icon.'"/>'.$seen_img.']]>    </cell>   
-				<cell  bgColor="'.$bg_color.'"><![CDATA['.$message.']]>    </cell>  
-				<cell  bgColor="'.$bg_color.'"><![CDATA['.fullname($caller).']]>    </cell> 
-				<cell  bgColor="'.$bg_color.'"><![CDATA['.$entry->timecreated.']]>    </cell>  
-				<cell  bgColor="'.$bg_color.'"><![CDATA['.'['.get_string('modulename', $module->name).':'.$moduleinstance->name.'] ]]>    </cell> 
-				<cell  bgColor="'.$bg_color.'"><![CDATA['.$entry->firstname.' '.$entry->lastname.' ]]>    </cell> 
+				<userdata name="cmid">'.$entry->cmid.'</userdata>
+				<userdata name="timecreated">'.$entry->timecreated.'</userdata>
+				<cell  bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.$entry->id.$dimmedpost.']]>    </cell>  
+				<cell  bgColor="'.$bg_color.'"><![CDATA['.'<img src="pix/'.$icon.'"/>'.$seen_img.']]>    </cell>   
+				<cell  bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.$message.$dimmedpost.']]>    </cell>  
+				<cell  bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.fullname($caller).$dimmedpost.']]>    </cell> 
+				<cell  bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.date('d.m.Y h:i',$entry->timecreated).$dimmedpost.']]>    </cell>  
+				<cell  bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.'[ '.$modpix.' '.$moduleinstance->name.']'.$dimmedpost.' ]]>    </cell> 
+				<cell  bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.$entry->firstname.' '.$entry->lastname.$dimmedpost.' ]]>    </cell> 
 				
 				</row>' ;
 				print($row);
@@ -131,7 +141,7 @@ class livedesk {
           
 		$message->mstatus = $status;
           
-		return update_record('block_livedesk_queue', $message);
+		return update_record('block_livedesk_queue', addslash_object($message));
    	}
 
 	/**
@@ -140,7 +150,14 @@ class livedesk {
 	*
 	*/        
 	static function unlock_message($messageid){
-		return set_field('block_livedesk_queue', 'locked', 0, 'id', "$messageid");
+		$message = get_record('block_livedesk_queue', 'id', "$messageid");
+		$message->locked = 0;
+		if (!$message->mstatus != 'answered'){
+			$message->lockedby = 0;
+			$message->answeredby = 0;
+			$message->locktime = 0;
+		}
+		update_record('block_livedesk_queue', addslashes_object($message));
    	}
       
 	/**
@@ -339,7 +356,7 @@ class livedesk {
                      continue; 
 				}
 				$i++;
-				$sum = $avg+ $r->timeanswered - $r->timecreated;                  
+				$sum = $avg + $r->timeanswered - $r->timecreated;                  
 			}
 
 			if($i > 0){
@@ -365,7 +382,7 @@ class livedesk {
     }
       
 	static function get_online_users_count($blockid){
-		global $CFG;
+		global $CFG, $USER;
           
 		$timetoshowusers = 300; //Seconds default 
 		$timefrom = 100 * floor((time()-$timetoshowusers) / 100); // Round to nearest 100 seconds for better query cache
@@ -445,6 +462,13 @@ class livedesk {
         
         if($result2){
             $attenders_count = count($result2);
+            foreach($result2 as $uid => $notused){
+            	$user = get_record('user', 'id', $uid, '', '', '', '', 'id,firstname,lastname');
+            	$attender = new StdClass;
+            	$attender->class = ($user->id == $USER->id) ? 'isme' : 'isnotme' ;
+            	$attender->name = fullname($user);
+            	$results['attenders'][] = $attender;
+            }
         } else {
             $attenders_count = 0;
         }
@@ -464,8 +488,8 @@ class livedesk {
         
         $sql = "
         	SELECT 
-        		mp.livedeskid,
         		mp.cmid,
+        		mp.livedeskid,
         		m.name as plugintype,
         		cm.instance as plugininstance
         	FROM 
@@ -521,6 +545,39 @@ class livedesk {
 
 		return $seen;
     }
+    
+    /**
+    *  mark message as discarded 
+    * @param ref $post_id post id to be discarded.
+    * @param ref $discard_date if this parameter is given then we discard posts befre this date
+    * @return boolean of the operation success or failur.
+    */
+    static function livedesk_discard_post($messageid,$discard_date=null){
+       global $CFG;
+    
+       if($discard_date != null)
+       {
+           //this is a discard before date
+           $discard_date_linux = strtotime($discard_date); 
+           $sql = "UPDATE ".$CFG->prefix."block_livedesk_queue 
+                   SET mstatus='discarded' 
+                   WHERE timecreated<".$discard_date_linux."
+                   AND mstatus ='new'";
+           execute_sql($sql,false);
+           return;    
+       } 
+        
+       $message = get_record('block_livedesk_queue', 'id', $messageid);
+       
+       // invalid message
+       if(!$message){
+           return 0;
+       }
+       
+       $message->mstatus = "discarded";
+       return update_record('block_livedesk_queue', addslashes_object($message));
+    }
+    
 }
 
 ?>

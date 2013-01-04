@@ -77,6 +77,10 @@ div[ida='dhxMainCont'] .navbar {
 	opacity:0.5;
 }
 
+.dimmed{
+	opacity:0.5;
+}
+
 .livedeskmenu{
  	list-style: none outside none;
     padding-left: 10px;
@@ -86,7 +90,15 @@ div[ida='dhxMainCont'] .navbar {
 	font-size:12px;
 }
 
+.online_users.isme{
+	color:#53CA3E;
+}
+
 #livedesk-instances-table{
 	width:80%;
 	margin:auto;
+}
+
+.livedesk-userlist{
+   margin :0px;
 }
