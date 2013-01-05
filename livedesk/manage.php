@@ -68,7 +68,7 @@
       		$pluginsattached = count_records('block_livedesk_modules', 'livedeskid', $livedesk->id);
           
           	$row = array();
-            $row[] = $livedesk->name;
+            $row[] = format_string($livedesk->name);
             $row[] = $blocksattached;
             $row[] = $pluginsattached;
             

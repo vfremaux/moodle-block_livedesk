@@ -36,12 +36,8 @@
   
   	$navlinks = array(array('name' => get_string('livedeskedit', 'block_livedesk'), 'link' => '', 'type' => 'title'));
   	$navigation = build_navigation($navlinks);
-  	print_header("$course->shortname", 
-                 "$course->fullname", 
-                 $navigation, 
-                 '', 
-                 '', 
-                 true);
+
+// Form controller
     
   	$livedeskform = new livedesk_form();
   	
@@ -55,19 +51,19 @@
   		
 		if($data->livedeskid == 0){
           	//new livedesk
-          	$livedesk = new stdClass();
-          	$livedesk->name = $data->livedeskname ; 
-          	$livedesk->description = $data->livedeskdescription ; 
-          	$livedeskid = insert_record('block_livedesk_instance', $livedesk) ;
+			unset($data->livedeskid);
+          	$data->servicestarttime = $data->servicestarttime_h * 3600 + $data->servicestarttime_m * 60;
+          	$data->serviceendtime = $data->serviceendtime_h * 3600 + $data->serviceendtime_m * 60;
+          	$livedeskid = insert_record('block_livedesk_instance', $data) ;
       	} else {
           	$livedesk = get_record('block_livedesk_instance', 'id', $data->livedeskid);
+
+			$data->id = $data->livedeskid;
+			unset($data->livedeskid);
+          	$data->servicestarttime = $data->servicestarttime_h * 3600 + $data->servicestarttime_m * 60;
+          	$data->serviceendtime = $data->serviceendtime_h * 3600 + $data->serviceendtime_m * 60;
           
-          	$livedesk->name= $data->livedeskname;
-          	$livedesk->description= $data->livedeskdescription;
-          
-          	update_record('block_livedesk_instance', $livedesk);
-          
-          	$livedeskid = $livedesk->id;
+          	$livedeskid = update_record('block_livedesk_instance', $data);          
       	}
       
       	delete_records('block_livedesk_modules','livedeskid', $livedeskid);
@@ -104,6 +100,14 @@
    $data->livedeskid = $livedeskid;
    $data->bid = $bid;
    $livedeskform->set_data($data);
+
+  	print_header("$course->shortname", 
+                 "$course->fullname", 
+                 $navigation, 
+                 '', 
+                 '', 
+                 true);
+
    print($livedeskform->display());  
 
    print_footer();  

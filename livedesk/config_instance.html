@@ -1,86 +1,8 @@
 <?php
-    $usehtmleditor = can_use_html_editor();
-
-    $text = isset($this->config->text) ? $this->config->text : '';
-    if (empty($this->instance->pinned) and $this->instance->pagetype !== 'course-view') {
-        $text = clean_text($text, FORMAT_HTML);
-    }
     
-    if (isset($this->config->block_livedesk_resolving_post_release)){
-    	$configpostrelease = $this->config->block_livedesk_resolving_post_release;
-    } else {
-    	$configpostrelease = @$CFG->block_livedesk_resolving_post_release;
-    }
-    
-    if (isset($this->config->block_livedesk_resolving_post_release)){
-    	$configattenderrelease = $this->config->block_livedesk_attendee_release_time;
-    } else {
-    	$configattenderrelease = @$CFG->block_livedesk_attendee_release_time;
-    }
-    
-    if (isset($this->config->block_livedesk_resolving_post_release)){
-    	$configstackovertime = $this->config->block_livedesk_stack_over_time;
-    } else {
-    	$configstackovertime = @$CFG->block_livedesk_stack_over_time;
-    }
-
-    if (isset($this->config->block_livedesk_service_timerange_start)){
-    	$configservicestart = $this->config->block_livedesk_service_timerange_start_m * 3600 + $this->config->block_livedesk_service_timerange_start_h * 60 ;
-    } else {
-    	$configservicestart = @$CFG->block_livedesk_service_timerange_start_h * 3600 + @$CFG->block_livedesk_service_timerange_start_h * 60;
-    }    
-    echo $configservicestart.'<br/>';
-
-    if (isset($this->config->block_livedesk_service_timerange_end)){
-    	$configserviceend = $this->config->block_livedesk_service_timerange_end_m * 3600 + $this->config->block_livedesk_service_timerange_end_h * 60 ;
-    } else {
-    	$configserviceend = @$CFG->block_livedesk_service_timerange_end_h * 3600 + @$CFG->block_livedesk_service_timerange_end_h * 60;
-    }
-    echo $configserviceend;
 ?>
 
 <table cellpadding="9" cellspacing="0">
-<tr valign="top">
-    <td align="right"><?php print_string('block_livedesk_resolving_post_release', 'block_livedesk'); ?>:</td>
-    <td><input type="text" name="block_livedesk_resolving_post_release" size="30" value="<?php echo $configpostrelease ?>" /> 
-    <label style="font-size: 11px;">(<?php print_string('block_livedesk_resolving_post_release_comment', 'block_livedesk'); ?>)</td>
-</tr>
-
-<tr valign="top">
-    <td align="right"><?php print_string('block_livedesk_attendee_release_time', 'block_livedesk'); ?>:</td>
-    <td><input type="text" name="block_livedesk_attendee_release_time" size="30" value="<?php echo $configattenderrelease ?>" /> 
-    <label style="font-size: 11px;">(<?php print_string('block_livedesk_attendee_release_time_comment', 'block_livedesk'); ?>)</label></td>
-</tr>
-
-<tr valign="top">
-    <td align="right"><?php print_string('block_livedesk_stack_over_time', 'block_livedesk'); ?>:</td>
-    <td><input type="text" name="block_livedesk_stack_over_time" size="30" value="<?php echo $configstackovertime ?>" /> 
-    <label style="font-size: 11px;">(<?php print_string('block_livedesk_stack_over_time_comment', 'block_livedesk'); ?>)
-    </label>
-    </td>
-</tr>
-
-<tr valign="top">
-    <td align="right"><?php print_string('block_livedesk_desk_service_timerange_start', 'block_livedesk'); ?>:</td>
-    <td> 
-    	<?php
-    	print_time_selector('block_livedesk_desk_service_timerange_start_h', 'block_livedesk_desk_service_timerange_start_h', 10, $configservicestart);
-    	?>
-    <label style="font-size: 11px;">(<?php print_string('block_livedesk_desk_service_timerange_start_comment', 'block_livedesk'); ?>)
-    </label>
-    </td>
-</tr>
-
-<tr valign="top">
-    <td align="right"><?php print_string('block_livedesk_desk_service_timerange_end', 'block_livedesk'); ?>:</td>
-    <td> 
-    	<?php
-    	print_time_selector('block_livedesk_desk_service_timerange_end_h', 'block_livedesk_desk_service_timerange_end_m', 10, $configserviceend);
-    	?>
-    <label style="font-size: 11px;">(<?php print_string('block_livedesk_desk_service_timerange_end_comment', 'block_livedesk'); ?>)<label style="font-size: 10px;">
-    </td>
-</tr>
-
 <tr>
 	<td align="right"><?php print_string('livedeskref', 'block_livedesk') ?></td>
 	<td><?php print_reference_pluginsselect($this->instance->id); ?></td>
@@ -106,9 +28,6 @@
 </table>
 
 <?php 
-if ($usehtmleditor) {
-  use_html_editor(); 
-}
 
 /**
 * prints the plugin selector

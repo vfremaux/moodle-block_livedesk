@@ -28,7 +28,7 @@ class block_livedesk extends block_base {
 
     function init() {
         $this->title = get_string('pluginname', 'block_livedesk');
-        $this->version = 2013010400;
+        $this->version = 2013010500;
         $this->cron = 1;
     }
 

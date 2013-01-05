@@ -17,19 +17,68 @@ require_once ($CFG->dirroot.'/lib/formslib.php');
 class livedesk_form extends moodleform {
 
     function definition() {
-        global $CFG, $COURSE;
+        global $CFG;
         
         $mform    =& $this->_form;
         
-        $mform->addElement('text', 'livedeskname', get_string('livedeskname', 'block_livedesk'));
-        $mform->addElement('htmleditor', 'livedeskdescription', get_string('livedeskdescription', 'block_livedesk'));
+        $mform->addElement('text', 'name', get_string('livedeskname', 'block_livedesk'));
+        $mform->addElement('htmleditor', 'description', get_string('livedeskdescription', 'block_livedesk'));
+
+        $mform->addElement('text', 'resolvereleasedelay', get_string('resolvereleasedelay', 'block_livedesk'));
+        $mform->setDefault('resolvereleasedelay', @$CFG->block_livedesk_resolving_post_release);
+        $mform->addElement('text', 'attenderreleasetime', get_string('attenderreleasetime', 'block_livedesk'));
+        $mform->setDefault('attenderreleasetime', @$CFG->block_livedesk_attendee_release_time);
+        $mform->addElement('text', 'stackovertime', get_string('stackovertime', 'block_livedesk'));
+        $mform->setDefault('stackovertime', @$CFG->block_livedesk_stack_over_time);
+        
+        $hours = array();
+        for($i = 0; $i < 24 ; $i++){
+			$hours[$i] = $i;
+        }
+
+        $minrange = array();
+        for($i = 0; $i < 60 ; $i = $i + 5){
+			$mins[$i] = $i;
+        }
+        
+        $group1[] = & $mform->createElement('select', 'servicestarttime_h', get_string('servicestarttime', 'block_livedesk'), $hours);
+        $mform->setDefault('servicestarttime_h', @$CFG->block_livedesk_service_timerange_start_h);
+        $group1[] = & $mform->createElement('select', 'servicestarttime_m', get_string('servicestarttime', 'block_livedesk'), $mins);
+        $mform->setDefault('servicestarttime_m', @$CFG->block_livedesk_service_timerange_start_m);
+        $mform->addGroup($group1, 'servicestarttime', get_string('servicestarttime', 'block_livedesk'), array(''), false);
+
+        $group2[] = & $mform->createElement('select', 'serviceendtime_h', get_string('serviceendtime', 'block_livedesk'), $hours);
+        $mform->setDefault('serviceendtime_h', @$CFG->block_livedesk_service_timerange_end_h);
+        $group2[] = & $mform->createElement('select', 'serviceendtime_m', get_string('serviceendtime', 'block_livedesk'), $mins);
+        $mform->setDefault('serviceendtime_m', @$CFG->block_livedesk_service_timerange_end_m);
+        $mform->addGroup($group2, 'serviceendtime', get_string('serviceendtime', 'block_livedesk'), array(''), false);
+
         $mform->addElement('html', $this->get_monitoredplugins_list());
         $mform->addElement('hidden', 'livedeskid');
         $mform->addElement('hidden', 'bid');
         
-        $this->add_action_buttons();
-        
+        $this->add_action_buttons();        
     }
+    
+    function set_data($data){
+    	
+    	if (!isset($data->servicestarttime)){
+    		$data->servicestarttime_h = @$CFG->block_livedesk_service_timerange_start_h;
+    		$data->servicestarttime_m = @$CFG->block_livedesk_service_timerange_start_m;
+    	} else {
+    		$data->servicestarttime_h = floor($data->servicestarttime / 3600);
+    		$data->servicestarttime_m = floor($data->servicestarttime % 3600 / 60);
+    	}
+    	if (!isset($data->serviceendtime)) {
+    		$data->serviceendtime_h = @$CFG->block_livedesk_service_timerange_end_h;
+    		$data->serviceendtime_m = @$CFG->block_livedesk_service_timerange_end_m;
+    	} else {
+    		$data->serviceendtime_h = floor($data->serviceendtime / 3600);
+    		$data->serviceendtime_m = floor($data->serviceendtime % 3600 / 60);
+    	}
+
+		parent::set_data($data);    	
+	}
     
 	// TODO : revert to moodle forms create checkbox element in groups with <br/> insertions
     function get_monitoredplugins_list(){  
@@ -48,13 +97,13 @@ class livedesk_form extends moodleform {
       	if($livedeskid != 0){
       		$monitoredplugins = get_records('block_livedesk_modules', 'livedeskid', $livedeskid);
      
-      		if($monitoredplugins){
+      		if ($monitoredplugins){
             	foreach($monitoredplugins as $plugin){
                 	$selected_plugins_arr[] = $plugin->cmid;
             	}
         	}
       	}
-        //load courses user has access to .
+        // load courses user has access to .
         $courses = get_records('course');
         $cap = "moodle/course:view";
 		
@@ -100,9 +149,9 @@ class livedesk_form extends moodleform {
                     
                     $table .= "<div style='padding-left:5px;'>
                     <input type='checkbox' name='pluginids[]' ".$checked." value='".$plugin->id."' />
-                    ".$plugin->name.'</div>';
+                    ".format_string($plugin->name).'</div>';
                 }
-                 $table .= '</div>';//course div
+                 $table .= '</div>'; //course div
             }
         }
 

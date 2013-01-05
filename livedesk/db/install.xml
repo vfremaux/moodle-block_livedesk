@@ -8,7 +8,12 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="name"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="description"/>
-        <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="name"/>
+        <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="name" NEXT="attenderreleasetime" />
+        <FIELD NAME="attenderreleasetime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="description" NEXT="stackovertime" />
+        <FIELD NAME="stackovertime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="attenderreleasetime" NEXT="resolvereleasedelay" />
+        <FIELD NAME="resolvereleasedelay" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="stackovertime" NEXT="servicestarttime" />
+        <FIELD NAME="servicestarttime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="resolvereleasedelay" NEXT="serviceendtime" />
+        <FIELD NAME="serviceendtime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="servicestarttime" />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

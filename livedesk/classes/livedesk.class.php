@@ -88,7 +88,8 @@ class livedesk {
                       
 				$message = "<label class='".$classes."'>".substr($entry->message,0,30)."</label>";
 				$modname = get_string('modulename', $module->name);
-				$modpix = "<img src=\"{$CFG->pixpath}/mod/{$module->name}/icon.gif\" title=\"$modname\" />"; 
+				
+				$modpix = "<img src=\"{$CFG->modpixpath}/{$module->name}/icon.gif\" title=\"$modname\" />"; 
 				
 				$dimmedpre = ($entry->mstatus == 'discarded') ? '<div class="dimmed">' : '' ;
 				$dimmedpost = ($entry->mstatus == 'discarded') ? '</div>' : '' ;

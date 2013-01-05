@@ -35,14 +35,19 @@ $string['livedesk:viewlivedeskstatistics'] = 'Can view overall service statistic
 
 //admin settings 
 
+$string['resolvereleasedelay'] = 'Resolving Post release' ;
 $string['block_livedesk_resolving_post_release'] = 'Resolving Post release' ;
 $string['block_livedesk_resolving_post_release_comment'] = 'If a post is considered being “in resolution” during more than the release time, it probably might not be never answered . So it should be pushed back in stack.' ;
-$string['block_livedesk_attendee_release_time'] = 'Attendee Release Time' ;
-$string['block_livedesk_attendee_release_time_comment'] = 'An amount of time an attender will NOT be solicited after having attended a post.' ;
+$string['attenderreleasetime'] = 'Attender Release Time' ;
+$string['block_livedesk_attender_release_time'] = 'Attender Release Time' ;
+$string['block_livedesk_attender_release_time_comment'] = 'An amount of time an attender will NOT be solicited after having attended a post.' ;
+$string['stackovertime'] = 'Stack over time' ;
 $string['block_livedesk_stack_over_time'] = 'Stack over time' ;
 $string['block_livedesk_stack_over_time_comment'] = 'Date/time before which no unattended messages are considered. This is to save attenders from persistant popup raise on highly used forum tracks.' ;
+$string['servicestarttime'] = 'Desk service start time' ;
 $string['block_livedesk_service_timerange_start'] = 'Desk service start min' ;
 $string['block_livedesk_service_timerange_start_comment'] = 'Opening time of the desk service.' ;
+$string['serviceendtime'] = 'Desk service end time' ;
 $string['block_livedesk_service_timerange_end'] = 'Desk service end time' ;
 $string['block_livedesk_service_timerange_end_comment'] = 'Closing time of the desk service.' ;
 
@@ -74,7 +79,7 @@ $string['monitorableplugins'] = 'Monitorable plugins';
 $string['newlivedeskblock'] = '(new LiveDesk block)';
 $string['nomonitorableplugins'] = 'There is no monitorable plugin in this course.';
 $string['noreference'] = 'There is no LiveDesk instance define yet to use this block with. You should create one if you have capability for.';
-$string['online_attenderes_count'] = 'Online attendres: ';
+$string['online_attenderes_count'] = 'Online attenders: ';
 $string['online_users'] = 'Online Users';
 $string['online_users_count'] = 'Online users: ';
 $string['origin'] = 'Origin';

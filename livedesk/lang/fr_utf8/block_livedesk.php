@@ -35,16 +35,21 @@ $string['livedesk:viewlivedeskstatistics'] = 'Peut voir les statistiques génér
 
 //admin settings 
 
+$string['resolvereleasedelay'] = 'Temps de relâchement des demandes' ;
 $string['block_livedesk_resolving_post_release'] = 'Temps de relâchement d\'un post en cours' ;
 $string['block_livedesk_resolving_post_release_comment'] = 'Si un message est en attente de réponse pendant une durée supérieure à ce temps, alors le support considère que ce message peut avoir été oublié ou l\'opérateur occupé à d\'autres tâches et le remettra en jeu dans la pile.' ;
-$string['block_livedesk_attendee_release_time'] = 'Temps de garde de l\'opérateur' ;
-$string['block_livedesk_attendee_release_time_comment'] = 'Une fois qu\'une réponse a été donnée, ce temps peut être exploité par l\'opérateur sans être sollicité de nouveau.' ;
+$string['attenderreleasetime'] = 'Temps de garde de l\'opérateur' ;
+$string['block_livedesk_attender_release_time'] = 'Temps de garde de l\'opérateur' ;
+$string['block_livedesk_attender_release_time_comment'] = 'Une fois qu\'une réponse a été donnée, ce temps peut être exploité par l\'opérateur sans être sollicité de nouveau.' ;
+$string['stackovertime'] = 'Date d\'obsolescence' ;
 $string['block_livedesk_stack_over_time'] = 'Date d\'obsolescence' ;
 $string['block_livedesk_stack_over_time_comment'] = 'Date en desous de laquelle plus aucune demande ne sera traitée. Ceci permet aux opérateurs d\'éliminer une partie trop ancienne du flux, évitant ainsi au signal de rappel de déclencher en permanence.' ;
-$string['block_livedesk_desk_service_timerange_start'] = 'Heure d\'ouverture' ;
-$string['block_livedesk_desk_service_timerange_start_comment'] = 'Heure d\'ouverture du service support.' ;                    
-$string['block_livedesk_desk_service_timerange_end'] = 'Heure de fermeture' ;
-$string['block_livedesk_desk_service_timerange_end_comment'] = 'Heure de fermeture du service support.' ;
+$string['servicestarttime'] = 'Heure d\'ouverture' ;
+$string['block_livedesk_service_timerange_start'] = 'Heure d\'ouverture' ;
+$string['block_livedesk_service_timerange_start_comment'] = 'Heure d\'ouverture du service support.' ;                    
+$string['serviceendtime'] = 'Heure de fermeture' ;
+$string['block_livedesk_service_timerange_end'] = 'Heure de fermeture' ;
+$string['block_livedesk_service_timerange_end_comment'] = 'Heure de fermeture du service support.' ;
 
 $string['adddeskinstances'] = '+ Créer un nouveau centre';
 $string['blockname'] = 'Centre support pédagogique';
@@ -91,6 +96,7 @@ $string['discard_before'] = 'Ignorer les messages avant...';
 $string['discard_date'] = 'Date';
 $string['discard_before_txt'] = 'Ignorer tous les messages avant cette date';
 $string['confirmdiscard'] = 'Confirmer';
+$string['manage_livedesks'] = 'Gérer les centres supports';
 
 // statistics
 
