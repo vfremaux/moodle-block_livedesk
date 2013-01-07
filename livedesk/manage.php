@@ -14,6 +14,7 @@
  */
   
   	require_once('../../config.php');
+  	require_once($CFG->dirroot.'/blocks/livedesk/classes/livedesk.class.php');
     
   	$courseid = optional_param('course',1,PARAM_INT);
   	$action = optional_param('what', '', PARAM_INT);
@@ -68,7 +69,12 @@
       		$pluginsattached = count_records('block_livedesk_modules', 'livedeskid', $livedesk->id);
           
           	$row = array();
-            $row[] = format_string($livedesk->name);
+			$livedeskwindow = livedesk::get_livedesk_window_name($livedesk);
+            if ($blocksattached){
+	            $row[] = "<a href=\"{$CFG->wwwroot}/blocks/livedesk/run.php?ldid={$livedesk->id}&course={$course->id}\" target=\"$livedeskwindow\">".format_string($livedesk->name).'</a>';
+	        } else {
+	            $row[] = format_string($livedesk->name);
+	        }
             $row[] = $blocksattached;
             $row[] = $pluginsattached;
             

@@ -11,8 +11,9 @@
         <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="name" NEXT="attenderreleasetime" />
         <FIELD NAME="attenderreleasetime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="description" NEXT="stackovertime" />
         <FIELD NAME="stackovertime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="attenderreleasetime" NEXT="resolvereleasedelay" />
-        <FIELD NAME="resolvereleasedelay" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="stackovertime" NEXT="servicestarttime" />
-        <FIELD NAME="servicestarttime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="resolvereleasedelay" NEXT="serviceendtime" />
+        <FIELD NAME="resolvereleasedelay" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="stackovertime" NEXT="maxstacksize" />
+        <FIELD NAME="maxstacksize" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="resolvereleasedelay" NEXT="servicestarttime" />
+        <FIELD NAME="servicestarttime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="maxstacksize" NEXT="serviceendtime" />
         <FIELD NAME="serviceendtime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="servicestarttime" />
       </FIELDS>
       <KEYS>

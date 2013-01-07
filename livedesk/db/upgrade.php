@@ -1,4 +1,4 @@
-<?php  //$Id: upgrade.php,v 1.3 2010/05/19 15:58:23 vf Exp $
+<?php  //$Id: upgrade.php,v 1.2 2013-01-06 23:03:17 vf Exp $
 
 // This file keeps track of upgrades to 
 // the vmoodle block
@@ -69,6 +69,17 @@ function xmldb_block_livedesk_upgrade($oldversion = 0) {
     /// Launch add field serviceendtime
         $result = $result && add_field($table, $field);
 	}
+
+    if ($result && $oldversion < 2013010600) {
+
+    /// Define field maxstacksize to be added to block_livedesk_instance
+        $table = new XMLDBTable('block_livedesk_instance');
+        $field = new XMLDBField('maxstacksize');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, '11', XMLDB_UNSIGNED, null, null, null, null, null, 'resolvereleasedelay');
+
+    /// Launch add field maxstacksize
+        $result = $result && add_field($table, $field);
+    }
 	
     return $result;
 }

@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+require_once 'classes/livedesk.class.php';
+
 /**
  * Form for editing HTML block instances.
  *
@@ -28,7 +30,7 @@ class block_livedesk extends block_base {
 
     function init() {
         $this->title = get_string('pluginname', 'block_livedesk');
-        $this->version = 2013010500;
+        $this->version = 2013010600;
         $this->cron = 1;
     }
 
@@ -45,7 +47,7 @@ class block_livedesk extends block_base {
     }
 
     function get_content() {
-        global $CFG, $COURSE;
+        global $CFG, $COURSE, $SITE;
 
         require_once($CFG->libdir . '/filelib.php');
 
@@ -72,22 +74,28 @@ class block_livedesk extends block_base {
         	if ($COURSE->id > SITEID){
         		$courseparam = "&course=".$COURSE->id;
         	}
-	        $this->content->text = '<p style="text-align:center;padding-top:10px;">';
-	        $this->content->text .= "<a target=\"_blank\" href=\"{$CFG->wwwroot}/blocks/livedesk/run.php?bid={$this->instance->id}{$courseparam}\">";
-	        $this->content->text .= "<img src=\"{$CFG->wwwroot}/blocks/livedesk/pix/logo.png\"/>";
-	        $this->content->text .= '</a></p>';
+        	
+        	if (!empty($this->config->livedesk_instance)){
+	        	$livedeskwindow = livedesk::get_livedesk_window_name($this->config->livedesk_instance);
+		        $this->content->text = '<p style="text-align:center;padding-top:10px;">';
+		        $this->content->text .= "<a target=\"$livedeskwindow\" href=\"{$CFG->wwwroot}/blocks/livedesk/run.php?course={$COURSE->id}&bid={$this->instance->id}{$courseparam}\">";
+		        $this->content->text .= "<img src=\"{$CFG->wwwroot}/blocks/livedesk/pix/logo.png\"/>";
+		        $this->content->text .= '</a></p>';
+		    } else {
+		    	$this->content->text = notify(get_string('instance_notbounded_to_livedesk', 'block_livedesk'), 'notifyproblem', 'center', true);
+		    }
         }
            
         if(has_capability('block/livedesk:managelivedesks',$system_context)){
         	$manageinstancesstr = get_string('manageinstances', 'block_livedesk');
 	        $this->content->text .= '<div>';
 	        $this->content->text .= "<ul class='livedeskmenu'>";
-	        $this->content->text .= "<li><a href=\"{$CFG->wwwroot}/blocks/livedesk/manage.php\" ><b>{$manageinstancesstr}</b></a></li>";
+	        $this->content->text .= "<li><a href=\"{$CFG->wwwroot}/blocks/livedesk/manage.php?course={$COURSE->id}\" ><b>{$manageinstancesstr}</b></a></li>";
         }
         
         if(has_capability('block/livedesk:createlivedesk',$system_context)){
         	$addlivedeskstr = get_string('adddeskinstances', 'block_livedesk');
-	        $this->content->text .= "<li><a href=\"{$CFG->wwwroot}/blocks/livedesk/edit.php?livedeskid=0\" >$addlivedeskstr</a></li>";
+	        $this->content->text .= "<li><a href=\"{$CFG->wwwroot}/blocks/livedesk/edit.php?livedeskid=0&course={$COURSE->id}\" >$addlivedeskstr</a></li>";
 	        $this->content->text .= '</ul>';
 	        $this->content->text .= '</div>';
         }
@@ -97,7 +105,10 @@ class block_livedesk extends block_base {
         return $this->content;
     }
 
-
+	/**
+	*
+	*
+	*/
     function content_is_trusted() {
         global $SCRIPT;
 
@@ -114,15 +125,18 @@ class block_livedesk extends block_base {
         return (!empty($this->config->title) && parent::instance_can_be_docked());
     }
     
+    /**
+    *
+    *
+    */
     public function instance_config_save($data, $pinned = false) {      
-      
-         
+               
          $blockreference =  get_record('block_livedesk_blocks', 'blockid', $this->instance->id);
           
 		if(empty($blockreference)) {
 			$blockreference = new stdClass();
 			$blockreference->blockid = $this->instance->id;
-			$blockreference->livedeskid = $data->livedesk_instnace;
+			$blockreference->livedeskid = $data->livedesk_instance;
 			insert_record('block_livedesk_blocks', $blockreference);
         } else {
             //just update 
@@ -139,38 +153,99 @@ class block_livedesk extends block_base {
         return set_field($table, 'configdata', base64_encode(serialize($data)), 'id', $this->instance->id);
     }
     
+    /**
+    * processes some cron cleanup :
+    * locked messages for too long must be released
+    * too old messages (stack over time) must be discarded
+    * do a per livedsk processing with licedesk instance characteristics
+    */
     public function cron() {
         global $CFG;
 
     	mtrace( 'Cron block_livedesk' );
     
     	mtrace( 'Unlocking livedesk locked messages' );   
+    	
+    	$livedesks = get_records('block_livedesk');
+    	
+    	if (empty($livedesks)) return;
+    	
+    	foreach($livedesks as $livedesk){
 
-    	// do something    	
-    	$current_time = time();
+		/// check too old messages to discard them
 
-    	//load all queue records
-    	$locked_records = get_records_sql('select * from '.$CFG->prefix.'block_livedesk_queue where locked =1');
-    	$unlock_count = 0 ;
-    
-    	if($locked_records){
-        	foreach ($locked_records as $rec){
-          		$lock_period_mins = (($current_time - $rec->locktime)/60);
-          
-          		if($lock_period_mins > $CFG->block_livedesk_attendee_release_time){
-					//unlock
-					$rec->locked= 0;
-					$rec->lockedby=null;
-					$rec->locktime=null;
-					$unlock_count++;
-					update_record('block_livedesk_queue',$rec);
-          		}
-        	}
+	        // get liveinstance monitored plugins 
+			$monitored_plugins = get_records('block_livedesk_modules', 'livedeskid', $livedesk_instanceid);
+	          
+			if ($monitored_plugins){
+	        	$monitored_plugins_arr = array();
+	            foreach($monitored_plugins as $p){
+	                $monitored_plugins_arr[] = $p->cmid;  
+				}
+				$monitored_plugins_cs = implode("','", $monitored_plugins_arr);
+			}	          
+			
+			$stacktimeover = time() - $livedesk->stackovertime;
+
+			$discard_count = 0;    		
+    		if ($old_messages = get_records_select('block_livedesk_queue', " cmid IN ('$monitored_plugins_cs') AND timecreated < $stacktimeover AND mstatus = 'new' ", 'id, message, mstatus')){
+	    		foreach($old_messages as $m){
+	    			$m->mstatus = 'discarded';
+	    			update_record('block_livedesk_queue', addslashes_object($m));
+	    			$discard_count++;
+	    		}
+	    	}
+
+    		mtrace($discard_count." messages were discarded.");
+
+		/// release locked messages from too long time
+
+	    	// load all locked queue records
+	    	$timelockover = time() - ($livedesk->attenderreleasetime * 60);
+	    	$locked_records = get_records_select('block_livedesk_queue', " cmid IN ('$monitored_plugins_cs') AND locked = 1 AND timelocked < $timelockover ");
+	    	$unlock_count = 0 ;
+
+	    	if($oldlockedrecords){
+	        	foreach ($oldlockedrecords as $m){
+	          
+	          		if($lock_period_mins > $CFG->block_livedesk_attender_release_time){
+						//unlock
+						$rec->locked = 0;
+						$rec->lockedby = null;
+						$rec->locktime = null;
+						$unlock_count++;
+						update_record('block_livedesk_queue', $m);
+	          		}
+	        	}
+	    	}
+
+    		mtrace($unlock_count." messages were unlocked.");
+
+    		if ($livedesk->maxstacksize){
+    			mtrace('truncating queue to $livedesk->maxstacksize entries.');
+    			$sql = "
+    				SELECT 
+    					id,
+    					timecreated,
+    					timeanswered
+    				FROM
+						{$CFG->prefix}block_livedesk_queue
+					WHERE
+						cmid IN ('$monitored_plugins_cs')
+					ORDER BY
+						timecreated DESC, 
+						timeanswered DESC
+					OFFSET
+						$livedesk->maxstacksize
+    			";
+    			$endstackentry = get_record_sql($sql, true);
+    			delete_records_select('block_livedesk_queue', " cmid IN ('$monitored_plugins_cs') AND timecreated < {$endstackentry->timecreated} ");
+    		}
+
     	}
     
-    	mtrace($unlock_count." messages were unlocked.");
-    
     	// handle queue prioritization
+    	/*
     	mtrace('Fixing queue priorities.');   
     	$all_records = get_records('block_livedesk_queue', '', '');
   
@@ -183,6 +258,7 @@ class block_livedesk extends block_base {
            		update_record('block_livedesk_queue', addslashes_object($rec));
        		} 
     	}
+    	*/
   
     	return true;
     }
@@ -192,6 +268,8 @@ class block_livedesk extends block_base {
 	*/    
     function after_install(){
     	global $CFG;
+    	
+    	// install core triggers
     	
     	$sql = "
     		CREATE TRIGGER LiveDesk_Trigger
@@ -265,6 +343,8 @@ class block_livedesk extends block_base {
 		";
 
 		execute_sql($sql);
+
+		$this->call_plugins_function('livedesk_on_install');
     	
     }
     
@@ -272,11 +352,40 @@ class block_livedesk extends block_base {
     * Removes additional stuff.
     */
     function before_delete(){
-
+    	
     	$sql = "DROP TRIGGER LiveDesk_Trigger";
 		execute_sql($sql);
     	
     	$sql = "DROP TRIGGER LiveDesk_Trigger_Update_Discussion";
 		execute_sql($sql);
+
+		$this->call_plugins_function('livedesk_on_delete');
     }
+
+	/**
+	*
+	*/
+	private function call_plugins_function($fname, $args = null, $plugin = null){
+    	global $CFG;
+		
+    	$otherplugins = livedesk::get_monitorable_plugins();
+    	
+    	if (!is_null($plugin)){
+			if (is_file($CFG->dirroot.'/mod/'.$plugin.'/livedesklib.php')){
+				include_once $CFG->dirroot.'/mod/'.$op.'/livedesklib.php';
+				$plugindeletefunc = $plugin.'_'.$fname;
+				return $plugindeletefunc($args);
+			}
+    	}
+
+		foreach ($otherplugins as $op){
+			if ($op == 'forum') continue;
+			
+			if (is_file($CFG->dirroot.'/mod/'.$op.'/livedesklib.php')){
+				include_once $CFG->dirroot.'/mod/'.$op.'/livedesklib.php';
+				$plugindeletefunc = $op.'_'.$fname;
+				$plugindeletefunc($args);
+			}
+		}
+	}
 }

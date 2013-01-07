@@ -18,20 +18,20 @@
     mysql_query('SET NAMES UTF8');
 
     $action = optional_param('action', null, PARAM_TEXT);
-    $block_id = optional_param('bid', null, PARAM_TEXT);
-
-     
-    $context = get_context_instance(CONTEXT_BLOCK, $block_id);
-    require_capability('block/livedesk:runlivedesk', $context);
+    $block_id = optional_param('bid', 0, PARAM_INT);
+    $courseid = optional_param('course', 0, PARAM_INT);
       
     switch($action){
  
 	    case 'load_liveentries':
-	  
+	        $context = get_context_instance(CONTEXT_BLOCK, $block_id);
+            require_capability('block/livedesk:runlivedesk', $context); 
 		    livedesk::load_liveentries($block_id);
 		    exit;
 	    
 	    case 'set_message_status':
+            $context = get_context_instance(CONTEXT_BLOCK, $block_id);
+            require_capability('block/livedesk:runlivedesk', $context); 
 	    
 		    $plugin_id  = optional_param('plugin_id', null, PARAM_INT);
 		    $message_id  = optional_param('message_id', null, PARAM_INT);
@@ -41,7 +41,9 @@
 		    break;
 	    
 	    case 'get_online_users_count':
-	    
+	        $context = get_context_instance(CONTEXT_BLOCK, $block_id);
+            require_capability('block/livedesk:runlivedesk', $context); 
+
 		    $bid  = optional_param('bid',null,PARAM_INT);
 		    $user_count_arrs = livedesk::get_online_users_count($bid);
 		    $output = $user_count_arrs;
@@ -50,7 +52,10 @@
 	    
 	    case 'keep_me_live':
 	//       debugbreak();
-		    $bid = optional_param('bid',null,PARAM_INT);
+		    $context = get_context_instance(CONTEXT_BLOCK, $block_id);
+            require_capability('block/livedesk:runlivedesk', $context); 
+
+            $bid = optional_param('bid',null,PARAM_INT);
 		    $courseid = optional_param('courseid', null, PARAM_INT);
 		    $livedeskid = optional_param('livedeskid', null, PARAM_INT);
 		    livedesk::keep_me_alive($courseid, $bid, $livedeskid);
@@ -58,28 +63,39 @@
 		    break  ;
 	    
 	    case 'get_monitored_plugins':
-	     
+	        $context = get_context_instance(CONTEXT_BLOCK, $block_id);
+            require_capability('block/livedesk:runlivedesk', $context); 
+
 		    $livedeskid  = required_param('livedeskid', PARAM_INT);
 		    $output = livedesk::get_monitored_plugins($livedeskid);
 		    
 		    break  ;
 
 	    case 'unlock_item':
+            $context = get_context_instance(CONTEXT_BLOCK, $block_id);
+            require_capability('block/livedesk:runlivedesk', $context); 
 	     
 		    $livedeskid  = optional_param('livedeskid', null, PARAM_INT);
 		    $itemid  = optional_param('messageid', null, PARAM_INT);
 		    livedesk::unlock_message($itemid);
 		    exit;
-         case 'discard_post':
          
-          $itemid  = optional_param('messageid', null, PARAM_INT);
-          $ddate  = optional_param('date', null, PARAM_TEXT);
-          livedesk::livedesk_discard_post($itemid,$ddate);
-          break;
-         
-
+        case 'discard_post':
+          	$context = get_context_instance(CONTEXT_BLOCK, $block_id);
+          	require_capability('block/livedesk:runlivedesk', $context);  
+          	$itemid  = optional_param('messageid', null, PARAM_INT);
+          	$ddate  = optional_param('date', null, PARAM_TEXT);
+          	livedesk::livedesk_discard_post($itemid,$ddate);
+          	break;
+          
+		case 'get_unnotified_messages':    
+          	$course = get_record('course', 'id', "$courseid");
+            require_login($course); // security. people could extract private discussions
+          	$messages = livedesk::get_unnotified_messages();
+         	$output = $messages ;
+          	break;
     }
-
+   
     if(!empty($output)){
 	    $json_data = json_encode($output);
 	    echo($json_data);

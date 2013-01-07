@@ -109,9 +109,7 @@ $(document).ready(function(){
        keepMeAlive();
      }, 300000);
 
-    var success = generateNoty(\'<b>Welcome to LiveDesk!</b>\',\'information\');
-   
-   
+
     function onBeforeContextMenu(id,ind,obj){
 	    selectedRow = id;
 	    return true;
@@ -207,6 +205,7 @@ $(document).ready(function(){
             
         },\'xml\');
         
+        /*
         mygrid.forEachRow(function(id){ // function that gets id of the row as an incoming argument
             // here id - id of the row
 	        var notified = mygrid.getUserData(id,"notified"); 
@@ -219,6 +218,7 @@ $(document).ready(function(){
 			}
             
 		});
+        */
         return true;
     }
     

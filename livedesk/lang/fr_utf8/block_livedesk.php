@@ -44,6 +44,8 @@ $string['block_livedesk_attender_release_time_comment'] = 'Une fois qu\'une rép
 $string['stackovertime'] = 'Date d\'obsolescence' ;
 $string['block_livedesk_stack_over_time'] = 'Date d\'obsolescence' ;
 $string['block_livedesk_stack_over_time_comment'] = 'Date en desous de laquelle plus aucune demande ne sera traitée. Ceci permet aux opérateurs d\'éliminer une partie trop ancienne du flux, évitant ainsi au signal de rappel de déclencher en permanence.' ;
+$string['block_livedesk_max_stack_size'] = 'Taille de pile max (default)' ;
+$string['block_livedesk_max_stack_size_comment'] = 'La taille par défaut maximale d\'une pile d\'instance de centre support' ;
 $string['servicestarttime'] = 'Heure d\'ouverture' ;
 $string['block_livedesk_service_timerange_start'] = 'Heure d\'ouverture' ;
 $string['block_livedesk_service_timerange_start_comment'] = 'Heure d\'ouverture du service support.' ;                    
@@ -60,6 +62,7 @@ $string['configtitle'] = 'Block title';
 $string['configurations'] = 'Configuration';
 $string['createnewinstance'] = 'Créer un centre support';
 $string['leaveblanktohide'] = 'Laisser vide pour cacher le titre';
+$string['errornoname'] = 'Le nom est vide';
 $string['live_queue'] = 'Pile des demandes';
 $string['livedesk'] = 'Centre support pédagogique';
 $string['livedeskmanagement'] = 'Gestion des centres supports';
@@ -70,6 +73,7 @@ $string['livedeskname'] = 'Nom de l\'instance';
 $string['livedeskref'] = 'Service support associé :';
 $string['lockedby'] = 'Traité par';
 $string['manageinstances'] = 'Gérer les centres support';
+$string['maxstacksize'] = 'Taille max de la pile (en entrées)';
 $string['message'] = 'Message';
 $string['message_sent'] = 'Votre message a été envoyé.';
 $string['message_time'] = 'Heure d\'émission';
@@ -97,6 +101,9 @@ $string['discard_date'] = 'Date';
 $string['discard_before_txt'] = 'Ignorer tous les messages avant cette date';
 $string['confirmdiscard'] = 'Confirmer';
 $string['manage_livedesks'] = 'Gérer les centres supports';
+$string['newmessages'] = 'Nouveaux messages... ';
+$string['messagesinqueue'] = 'Messages dans le centre support : $a ';
+$string['morethanmessagesinqueue'] = 'PLus de {$a->count} messages attendent dans le centre support : {$a->queue}';
 
 // statistics
 

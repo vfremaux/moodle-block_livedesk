@@ -5,13 +5,16 @@ defined('MOODLE_INTERNAL') || die;
 if ($ADMIN->fulltree) {
     
 	$settings->add(new admin_setting_configtext('block_livedesk_resolving_post_release', get_string('block_livedesk_resolving_post_release', 'block_livedesk'),
-                   get_string('block_livedesk_resolving_post_release_comment', 'block_livedesk'), 60, PARAM_INT));
+                   get_string('block_livedesk_resolving_post_release_comment', 'block_livedesk'), 5, PARAM_INT));
     
     $settings->add(new admin_setting_configtext('block_livedesk_attender_release_time', get_string('block_livedesk_attender_release_time', 'block_livedesk'),
-                   get_string('block_livedesk_attender_release_time_comment', 'block_livedesk'), 5, PARAM_INT));
+                   get_string('block_livedesk_attender_release_time_comment', 'block_livedesk'), 10, PARAM_INT));
                    
     $settings->add(new admin_setting_configtext('block_livedesk_stack_over_time', get_string('block_livedesk_stack_over_time', 'block_livedesk'),
-                   get_string('block_livedesk_stack_over_time_comment', 'block_livedesk'), 5, PARAM_INT));
+                   get_string('block_livedesk_stack_over_time_comment', 'block_livedesk'), 120, PARAM_INT));
+
+    $settings->add(new admin_setting_configtext('block_livedesk_max_stack_size', get_string('block_livedesk_max_stack_size', 'block_livedesk'),
+                   get_string('block_livedesk_max_stack_size_comment', 'block_livedesk'), 100, PARAM_INT));
     
     $settings->add(new admin_setting_configtime('block_livedesk_service_timerange_start_h', 'block_livedesk_service_timerange_start_m', get_string('block_livedesk_service_timerange_start', 'block_livedesk'),
                    get_string('block_livedesk_service_timerange_start_comment', 'block_livedesk'),null));

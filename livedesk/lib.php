@@ -16,68 +16,36 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Form for editing HTML block instances.
+ * Library for theme notifications.
  *
  * @package   block_livedesk
- * @version   moodle 2
+ * @version   moodle 1.9
  * @copyright 2012 Wafa Adham,, Valery Fremaux
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function block_livedesk_pluginfile($course, $birecord_or_cm, $context, $filearea, $args, $forcedownload) {
-    global $SCRIPT;
+function block_livedesk_setup_theme_notification(){
+	global $CFG, $COURSE;
 
-    if ($context->contextlevel != CONTEXT_BLOCK) {
-        send_file_not_found();
-    }
-
-    require_course_login($course);
-
-    if ($filearea !== 'content') {
-        send_file_not_found();
-    }
-
-    $fs = get_file_storage();
-
-    $filename = array_pop($args);
-    $filepath = $args ? '/'.implode('/', $args).'/' : '/';
-
-    if (!$file = $fs->get_file($context->id, 'block_livedesk', 'content', 0, $filepath, $filename) or $file->is_directory()) {
-        send_file_not_found();
-    }
-
-    if ($parentcontext = get_context_instance_by_id($birecord_or_cm->parentcontextid)) {
-        if ($parentcontext->contextlevel == CONTEXT_USER) {
-            // force download on all personal pages including /my/
-            //because we do not have reliable way to find out from where this is used
-            $forcedownload = true;
-        }
-    } else {
-        // weird, there should be parent context, better force dowload then
-        $forcedownload = true;
-    }
-
-    session_get_instance()->write_close();
-    send_stored_file($file, 60*60, 0, $forcedownload);
-}
-
-/**
- * Perform global search replace such as when migrating site to new URL.
- * @param  $search
- * @param  $replace
- * @return void
- */
-function block_html_global_db_replace($search, $replace) {
-    global $DB;
-
-    $instances = $DB->get_recordset('block_instances', array('blockname' => 'livedesk'));
-    foreach ($instances as $instance) {
-        // TODO: intentionally hardcoded until MDL-26800 is fixed
-        $config = unserialize(base64_decode($instance->configdata));
-        if (isset($config->text) and is_string($config->text)) {
-            $config->text = str_replace($search, $replace, $config->text);
-            $DB->set_field('block_instances', 'configdata', base64_encode(serialize($config)), array('id' => $instance->id));
-        }
-    }
-    $instances->close();
+    print('<input type="hidden" id="wwwroot" value="'.$CFG->wwwroot.'" />');
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery-1.8.2.min.js' );  
+ 
+       //noty jquery plugin 
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/jquery.noty.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/bottomRight.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/bottom.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/bottomCenter.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/bottomRight.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/center.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/centerLeft.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/centerRight.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/inline.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/top.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/topCenter.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/topLeft.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/topRight.js' );
+    
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/themes/default.js' ); 
+    
+    echo "<script src=\"{$CFG->wwwroot}/blocks/livedesk/js/notif_init.php?id={$COURSE->id}\"></script>"; 
 }

@@ -1,8 +1,26 @@
 <?php
-/**
-* 
-* 
-*/
+
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/*
+ * @package   block_livedesk
+ * @version   moodle 1.9
+ * @copyright 2012 Wafa Adham,, Valery Fremaux
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require_once('globals.php');
 
@@ -20,10 +38,11 @@ class livedesk {
         // first get the linked livedesk instance 
         $livedesk_instance = get_record('block_livedesk_blocks', 'blockid', $blockinstanceid);
 		$livedesk_instanceid = $livedesk_instance->livedeskid; 
-        
+		
         // load liveinstance monitored plugins 
 		$monitored_plugins = get_records('block_livedesk_modules', 'livedeskid', $livedesk_instanceid);
-          
+		
+		$monitored_plugins_cs = '';
 		if ($monitored_plugins){
         	$monitored_plugins_arr = array();
             foreach($monitored_plugins as $p){
@@ -122,7 +141,7 @@ class livedesk {
          	SET 
          		notified = 1
          ";
-         execute_sql($sql,false);
+        // execute_sql($sql,false);
          
 		print('</rows>');           
 	}
@@ -575,10 +594,200 @@ class livedesk {
            return 0;
        }
        
-       $message->mstatus = "discarded";
+       $message->mstatus = 'discarded';
        return update_record('block_livedesk_queue', addslashes_object($message));
     }
     
+    
+    /**
+    *  get all messages that were not notified 
+    * @param ref $post_id post id to be discarded.
+    * @param ref $discard_date if this parameter is given then we discard posts befre this date
+    * @return boolean of the operation success or failur.
+    */
+    static function get_unnotified_messages(){   
+    	global $CFG, $USER;
+        //get the running livedesks .
+        
+       	$livedesks_arr = self::get_running_livedesks($USER->id, 5);      
+       
+       	if(empty($livedesks_arr)){
+           	return;
+       	}
+       
+       	$livedesks_csv = implode(",", $livedesks_arr);
+       
+		$sql = "
+       		SELECT 
+       			q.*,
+       			ldm.livedeskid
+			FROM 
+          		{$CFG->prefix}block_livedesk_queue q,
+          		{$CFG->prefix}block_livedesk_modules ldm 
+       		WHERE 
+          		q.cmid = ldm.cmid 
+        	AND 
+           		ldm.livedeskid IN ({$livedesks_csv})
+        	AND 
+           		q.notified = 0
+       	";
+    
+	    $livedeskqueues = array();
+       	if ($messages = get_records_sql($sql)){
+         	foreach($messages as $m){   
+	       		$livedeskqueues[$m->livedeskid][$m->id] = $m->message;
+	       	}
+       	}
+
+       	if (!empty($livedeskqueues)){ 
+         	foreach($livedeskqueues as $ldid => $ldq){   
+         		$livedesk = get_record('block_livedesk_instance', 'id', $ldid);
+         		$livedeskwin = livedesk::get_livedesk_window_name($livedesk);
+         		$notification->message = '';
+     			$notification->id = $ldid;
+				
+				// checking user can access from at least one block
+     			$accessblockid = livedesk::find_block_by_instance_user($livedesk->id);
+     			if (!$accessblockid){
+     				continue;
+     			}
+
+				// checking opening/closing time of the livedesk
+				$now = time();
+				$currenthour = date('H', $now);
+				$currentmins = date('i', $now);
+				$currentstamp = $currenthour * 3600 + $currentmins * 60;
+				if ($currentstamp < $livedesk->servicestarttime || $currentstamp > $livedesk->serviceendtime){
+					continue;
+				}				
+
+         		if ($num = count($ldq) <= 3) {
+         			// globalize message
+         			$notification = new StdClass();
+         			$mesbody = get_string('messagesinqueue', 'block_livedesk', $livedesk->name);
+         			$notification->message .= "<a href=\"{$CFG->wwwroot}/blocks/livedesk/run.php?bid={$accessblockid}\" target=\"$livedeskwin\">$mesbody</a><br/>";
+         			foreach($ldq as $q){
+	         			$notification->message .= $q.'<br/>';
+	         		}
+         		} else {
+         			$e = new StdClass;
+         			$e->count = $num;
+         			$e->queue = $livedesk->name;
+         			$mesbody = get_string('morethanmessagesinqueue', 'block_livedesk', $e);
+         			$notification->message .= "<a href=\"{$CFG->wwwroot}/blocks/livedesk/run.php?bid={$accessblockid}\" target=\"$livedeskwin\">$mesbody</a><br/>";
+         		}
+     			$messages_arr[] = $notification;       			
+         	}
+       	}
+       
+       	if (!empty($messages_arr)) return $messages_arr;
+       	return '';
+    }
+    
+    /**
+    * extracts from log the livedesks the user has recent activity in
+    */
+    static function get_running_livedesks($user_id, $mins_span = 50){
+    	global $CFG;
+     
+        $current_time = time();
+        //timespan is 5 mins.
+        $sql = "
+        	SELECT 
+                DISTINCT info from {$CFG->prefix}log 
+            WHERE 
+                userid = {$user_id} 
+            AND 
+              	module = 'livedesk' 
+            AND 
+              	action = 'run' 
+            AND 
+              	time BETWEEN ".($current_time - ($mins_span*60))." AND ".$current_time ."
+        " ;
+        
+        $livedesks_arr = array();
+        $results = get_records_sql($sql);
+        
+        if($results){
+            foreach($results as $r){
+                $livedesks_arr[] = $r->info;
+            }
+        }
+        
+        return $livedesks_arr;
+        
+    }
+    
+    /**
+    * gets the list of monitorable plugins. 
+    * by default, only forums are monitorable, but other plugins may be also.
+    *
+    */
+    static function get_monitorable_plugins(){
+    	global $CFG;
+    	
+    	$monitorable_plugins = array('forum');
+	
+		// add integrator defined plugins    	
+    	if (@$CFG->livedesk_plugins){
+			$monitorable_plugins = array_merge($monitorable_plugins, explode(',', $CFG->livedesk_plugins));			
+    	}
+    	
+    	return $monitorable_plugins;
+    }
+    
+    static function find_block_by_instance_course($livedeskid, $courseid){
+
+		if (!$possible = get_records_menu('block_livedesk_blocks', 'livedeskid', $livedeskid, '', 'blockid,id')){
+			return false;
+		}
+		$candidatesids = array_keys($possible);
+		$candidates_ids_cs = implode("','", $candidatesids); 
+		if ($candidates = get_records_select('block_instance', " id IN ('$candidates_ids_cs') AND pageid = $courseid ")){			
+			$blockids = array_keys($candidates);
+			return $blockids[0];
+		}
+		return false;
+    }
+
+	/**
+	* finds any block giving appropriate access to current user in a livedesk instance
+	*
+	*/
+    static function find_block_by_instance_user($livedeskid, $userid = 0){
+    	global $USER;
+    	
+    	if ($userid == 0) $userid = $USER->id;
+
+		if (!$possible = get_records_menu('block_livedesk_blocks', 'livedeskid', $livedeskid, '', 'blockid,id')){
+			return false;
+		}
+		
+		foreach(array_keys($possible) as $blockid){
+			$blockcontext = get_context_instance(CONTEXT_BLOCK, $blockid);
+			if (has_capability('block/livedesk:run', $blockcontext, $userid)){
+				return $blockid;
+			}
+		}
+		
+		return false;
+    }
+
+	/**
+	* unifies names given to Livedesk windows
+	*
+	*/    
+    static function get_livedesk_window_name(&$livedesk){
+    	global $SITE;
+    	
+    	if (is_object($livedesk)){    	
+    		$livedeskid = $livedesk->id;
+    	} else {
+    		$livedeskid = $livedesk;
+    	}
+    	
+    	return $SITE->shortname.'_Livedesk_'.$livedeskid;
+    }
 }
 
 ?>

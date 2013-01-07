@@ -13,6 +13,7 @@
  */
 
 require_once ($CFG->dirroot.'/lib/formslib.php');
+require_once ($CFG->dirroot.'/blocks/livedesk/classes/livedesk.class.php');
 
 class livedesk_form extends moodleform {
 
@@ -22,6 +23,7 @@ class livedesk_form extends moodleform {
         $mform    =& $this->_form;
         
         $mform->addElement('text', 'name', get_string('livedeskname', 'block_livedesk'));
+        $mform->addRule('name', null, 'required', null, 'client');
         $mform->addElement('htmleditor', 'description', get_string('livedeskdescription', 'block_livedesk'));
 
         $mform->addElement('text', 'resolvereleasedelay', get_string('resolvereleasedelay', 'block_livedesk'));
@@ -30,6 +32,8 @@ class livedesk_form extends moodleform {
         $mform->setDefault('attenderreleasetime', @$CFG->block_livedesk_attendee_release_time);
         $mform->addElement('text', 'stackovertime', get_string('stackovertime', 'block_livedesk'));
         $mform->setDefault('stackovertime', @$CFG->block_livedesk_stack_over_time);
+        $mform->addElement('text', 'maxstacksize', get_string('maxstacksize', 'block_livedesk'));
+        $mform->setDefault('maxstacksize', @$CFG->block_livedesk_max_stack_size);
         
         $hours = array();
         for($i = 0; $i < 24 ; $i++){
@@ -79,6 +83,17 @@ class livedesk_form extends moodleform {
 
 		parent::set_data($data);    	
 	}
+	
+	function validation($data, $files){
+		
+		$errors = array();
+
+		if (empty($data['name'])){
+			$errors['name'] = get_string('errornoname', 'block_livedesk');
+		}
+
+		return $errors;
+	}
     
 	// TODO : revert to moodle forms create checkbox element in groups with <br/> insertions
     function get_monitoredplugins_list(){  
@@ -116,30 +131,35 @@ class livedesk_form extends moodleform {
                 $table .= '<div class="course-div">';
                 $table .= "<div style='font-size:14px;margin-bottom:3px;'><b>".$course->fullname."</b></div>";
 
-				//load the forums 
+				// load the plugins
+				
+				$plugins = livedesk::get_monitorable_plugins();
+				$modulenames_cs = implode("','", $plugins);
+				 
                 $sql = "
                 	SELECT 
                 		cm.id,
                 		cm.instance,
-                		f.name 
+                		m.name as modulename
                 	FROM 
-                		{$CFG->prefix}forum f, 
                 		{$CFG->prefix}course_modules cm,
                 		{$CFG->prefix}modules m 
                 	WHERE 
                  		cm.course = {$course->id} AND
                  		cm.module = m.id AND
-                 		cm.instance = f.id AND
-                 		m.name = 'forum'
+                 		m.name IN ('$modulenames_cs')
                 " ;
                
-                $plugins = get_records_sql($sql) ;
-                
-                if(!$plugins){
+                if (!$plugins = get_records_sql($sql)){
                     $table .= get_string('nomonitorableplugins', 'block_livedesk');
                     continue;
                 }
                 
+                // add name of the activity for all matched plugins.
+                foreach($plugins as $pid => $p){
+                	$plugins[$pid]->name = get_string('modulename', $p->modulename). ' : '.get_field($p->modulename, 'name', 'id', $p->instance);
+                }
+                                
                 foreach ($plugins as $plugin){
                     if(in_array($plugin->id, $selected_plugins_arr)){
                     	$checked = " checked='checked' ";    

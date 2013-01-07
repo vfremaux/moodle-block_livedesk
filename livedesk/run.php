@@ -14,6 +14,7 @@
 
     require_once('../../config.php');
    
+    $livedeskid = optional_param('ldid', null, PARAM_INT);
     $bid = optional_param('bid', null, PARAM_INT);
     $courseid = optional_param('course', 1, PARAM_INT);
     
@@ -24,25 +25,29 @@
 	} else {
 	    require_login($course);
 	}
-  
-    $livedesk_reference = get_record('block_livedesk_blocks', 'blockid', $bid);
-        
-    if(empty($livedesk_reference)){
-        print(get_string('instance_notbounded_to_livedesk','block_livedesk'));
-        exit;
-    }
-        
-    $livedeskid = $livedesk_reference->livedeskid;
-    $livedesk = get_record('block_livedesk_instance', 'id', $livedeskid);
-    
+
+	if ($bid){
+	    $livedesk_reference = get_record('block_livedesk_blocks', 'blockid', $bid);
+	    if(empty($livedesk_reference)){
+	        print(get_string('instance_notbounded_to_livedesk', 'block_livedesk'));
+	        exit;
+	    }
+    	$livedeskid = $livedesk_reference->livedeskid;
+    	$livedesk = get_record('block_livedesk_instance', 'id', $livedeskid);
+
+	    $context = get_context_instance(CONTEXT_BLOCK, $bid);
+	    require_capability('block/livedesk:runlivedesk', $context);
+	} else {
+	    $livedesk = get_record('block_livedesk_instance', 'id', $livedeskid);
+	    require_once $CFG->dirroot.'/blocks/livedesk/classes/livedesk.class.php';
+	    $bid = livedesk::find_block_by_instance_course($livedesk->id, $course->id);
+	}        
+            
     if(empty($livedesk)){
         print(get_string('invalid_livedesk','block_livedesk'));
         exit;
     }
-    
-    $context = get_context_instance(CONTEXT_BLOCK, $bid);
-    require_capability('block/livedesk:runlivedesk', $context);
-    
+        
     //some variables neededby the js 
     print('<script type="text/javascript">var bid = '.$bid.'</script>'); 
     print('<script type="text/javascript">var courseid = '.$courseid.'</script>'); 

@@ -16,3 +16,23 @@ instant notification of something input into the activity, and will provide a li
 a reply interface (or anything capable to help handling the event, depending on the 
 activity module implementation).
 
+#####
+Implementing Global Notification
+#####
+
+In order to enable notification sitewide the following the are steps needed .
+- Install the Livedesk Block
+- Open footer.html of your theme .
+- Copy the following code and paste it there.
+
+        <?php
+        if(is_dir($CFG->dirroot.'/blocks/livedesk/'))
+        {
+            require_once($CFG->dirroot.'/blocks/livedesk/lib.php');
+            block_livedesk_setup_theme_notification();
+           
+        }
+        ?>
+
+- Save the footer.html
+
