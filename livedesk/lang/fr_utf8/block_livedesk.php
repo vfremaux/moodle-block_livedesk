@@ -104,6 +104,7 @@ $string['manage_livedesks'] = 'Gérer les centres supports';
 $string['newmessages'] = 'Nouveaux messages... ';
 $string['messagesinqueue'] = 'Messages dans le centre support : $a ';
 $string['morethanmessagesinqueue'] = 'PLus de {$a->count} messages attendent dans le centre support : {$a->queue}';
+$string['instance_notbounded_to_livedesk'] = 'Ce bloc n\'est actuellement lié à aucune instance de centre support. Il doit être configuré.';
 
 // statistics
 

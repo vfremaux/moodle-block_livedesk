@@ -653,13 +653,15 @@ class livedesk {
      			}
 
 				// checking opening/closing time of the livedesk
-				$now = time();
-				$currenthour = date('H', $now);
-				$currentmins = date('i', $now);
-				$currentstamp = $currenthour * 3600 + $currentmins * 60;
-				if ($currentstamp < $livedesk->servicestarttime || $currentstamp > $livedesk->serviceendtime){
-					continue;
-				}				
+				if (isset($livedesk->servicestarttime) && isset($livedesk->serviceendtime)){
+					$now = time();
+					$currenthour = date('H', $now);
+					$currentmins = date('i', $now);
+					$currentstamp = $currenthour * 3600 + $currentmins * 60;
+					if ($currentstamp < $livedesk->servicestarttime || $currentstamp > $livedesk->serviceendtime){
+						continue;
+					}
+				}
 
          		if ($num = count($ldq) <= 3) {
          			// globalize message
