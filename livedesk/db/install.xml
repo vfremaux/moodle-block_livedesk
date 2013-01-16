@@ -14,7 +14,7 @@
         <FIELD NAME="resolvereleasedelay" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="stackovertime" NEXT="maxstacksize" />
         <FIELD NAME="maxstacksize" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="resolvereleasedelay" NEXT="servicestarttime" />
         <FIELD NAME="servicestarttime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="maxstacksize" NEXT="serviceendtime" />
-        <FIELD NAME="serviceendtime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="servicestarttime" />
+        <FIELD NAME="serviceendtime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="servicestarttime" NEXT="keepalivedelay" />
         <FIELD NAME="keepalivedelay" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="serviceendtime" NEXT="refresh" />
         <FIELD NAME="refresh" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="keepalivedelay" />
       </FIELDS>
