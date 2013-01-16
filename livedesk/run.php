@@ -153,7 +153,7 @@
     print_header();
 
 	// unfortunately not capable to use require_js here due to the CGI parameter
-    echo "<script src=\"{$CFG->wwwroot}/blocks/livedesk/js/init.php?id={$courseid}\" ></script>";
+    echo "<script src=\"{$CFG->wwwroot}/blocks/livedesk/js/init.php?id={$courseid}&keepalive={$livedesk->keepalivedelay}&refresh={$livedesk->refresh}\" ></script>";
     
    // print('<div class="header">');
     print('<div class="headerlogo" >

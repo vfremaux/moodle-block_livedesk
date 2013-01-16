@@ -34,6 +34,10 @@ class livedesk_form extends moodleform {
         $mform->setDefault('stackovertime', @$CFG->block_livedesk_stack_over_time);
         $mform->addElement('text', 'maxstacksize', get_string('maxstacksize', 'block_livedesk'));
         $mform->setDefault('maxstacksize', @$CFG->block_livedesk_max_stack_size);
+        $mform->addElement('text', 'keepalivedelay', get_string('keepalivedelay', 'block_livedesk'));
+        $mform->setDefault('keepalivedelay', @$CFG->block_livedesk_keepalive_delay);
+        $mform->addElement('text', 'refresh', get_string('refresh', 'block_livedesk'));
+        $mform->setDefault('refresh', @$CFG->block_livedesk_refresh);
         
         $hours = array();
         for($i = 0; $i < 24 ; $i++){

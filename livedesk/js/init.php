@@ -3,6 +3,10 @@ require_once('../../../config.php')  ;
 header("Content-type: text/javascript; charset=utf-8");  ;
 
 $id = required_param('id', PARAM_INT);
+$keepalive = required_param('keepalive', PARAM_INT);
+$keepalive = $keepalive * 1000; // Javascript uses milliseconds
+$refresh = required_param('refresh', PARAM_INT);
+$refresh = $refresh * 1000; // Javascript uses milliseconds
 
 if (!$course = get_record('course', 'id', "$id")){
 	error("bad course ID");
@@ -15,14 +19,14 @@ $coursecontext = get_context_instance(CONTEXT_COURSE, $id);
 
 $viewsettingsbutton = '';
 if (has_capability('moodle/course:manageactivities', $coursecontext)){
-	$viewsettingsbutton = 'toolbar.addButton(\'settings\',4, \''.get_string("configurations","block_livedesk").'\', \'settings.png\', null); ';
+	$viewsettingsbutton = 'toolbar.addButton(\'settings\',4, \''.get_string('configurations', 'block_livedesk').'\', \'settings.png\', null); ';
 }
 
 $viewstatisticsbutton = '';
 if (has_any_capability(array('block/livedesk:viewuserstatistics', 
 							 'block/livedesk:viewinstancestatistics', 
 							 'block/livedesk:viewlivedeskstatistics'), $systemcontext)){
-	$viewstatisticsbutton = 'toolbar.addButton(\'view_statistics\',5, \''.get_string("statistics","block_livedesk").'\', \'statistics.png\', null); ';
+	$viewstatisticsbutton = 'toolbar.addButton(\'view_statistics\',5, \''.get_string('statistics', 'block_livedesk').'\', \'statistics.png\', null); ';
 }
 
 $viewmanagementbutton = '';
@@ -103,11 +107,11 @@ $(document).ready(function(){
     setInterval(function() {
         refreshGrid();
         refreshOnlineUsersCount();  
-     }, 10000);
+     }, '.$refresh.');
      
      setInterval(function() {
        keepMeAlive();
-     }, 300000);
+     }, '.$keepalive.');
 
 
     function onBeforeContextMenu(id,ind,obj){

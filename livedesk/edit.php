@@ -66,7 +66,7 @@
           	$livedeskid = update_record('block_livedesk_instance', $data);          
       	}
       
-      	delete_records('block_livedesk_modules','livedeskid', $livedeskid);
+      	delete_records('block_livedesk_modules', 'livedeskid', $livedeskid);
       	
       	$data->pluginids = $_POST['pluginids']; // this is quite ugly but works before the form has been cleaned up
  
@@ -78,19 +78,17 @@
               	insert_record('block_livedesk_modules', $livedesk_con);
           	}
       	}
-        if($bid)
-        {
-         $url = $CFG->wwwroot.'/blocks/livedesk/run.php?bid='.$bid;   
-        }
-        else{
-         $url = $CFG->wwwroot.'/blocks/livedesk/manage.php?course='.$course->id;   
+        if($bid) {
+         	$url = $CFG->wwwroot.'/blocks/livedesk/run.php?bid='.$bid;   
+        } else {
+         	$url = $CFG->wwwroot.'/blocks/livedesk/manage.php?course='.$course->id;   
         }
   	
   		redirect($url);
       	exit;
   	}
     
-	if($livedeskid > 0){               
+	if ($livedeskid > 0){               
       	$livedesk_obj = get_record('block_livedesk_instance', 'id', $livedeskid);
       	$livedesk_obj->livedeskname = $livedesk_obj->name;
       	$livedesk_obj->livedeskdescription = $livedesk_obj->description;
@@ -101,12 +99,7 @@
    $data->bid = $bid;
    $livedeskform->set_data($data);
 
-  	print_header("$course->shortname", 
-                 "$course->fullname", 
-                 $navigation, 
-                 '', 
-                 '', 
-                 true);
+  	print_header("$course->shortname", "$course->fullname", $navigation, '', '', true);
 
    print($livedeskform->display());  
 

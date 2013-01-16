@@ -25,7 +25,20 @@
  */
 
 function block_livedesk_setup_theme_notification(){
-	global $CFG, $COURSE;
+	global $CFG, $USER, $COURSE;
+	
+	// Control for adding the code to the footer. This saves performance with non concerned users
+	if (@$CFG->block_livedesk_live_notification_control == 'capability'){
+		if (!has_capability($CFG->block_livedesk_live_notification_control_value, get_context_instance(CONTEXT_SYSTEM))){
+			return;
+		}
+	} elseif (@$CFG->block_livedesk_live_notification_control == 'profilefield'){
+		$profilefield = get_record('user_info_field', 'shortname', @$CFG->block_livedesk_live_notification_control_value);
+		$profilevalue = get_record('user_info_data', 'userid', $USER->id, 'fieldid', $profilefield->id);
+		if (!$profilevalue || empty($profilevalue->data)){
+			return;
+		}
+	}
 
     print('<input type="hidden" id="wwwroot" value="'.$CFG->wwwroot.'" />');
     require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery-1.8.2.min.js' );  

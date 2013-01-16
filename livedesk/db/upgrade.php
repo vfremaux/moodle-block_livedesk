@@ -80,6 +80,23 @@ function xmldb_block_livedesk_upgrade($oldversion = 0) {
     /// Launch add field maxstacksize
         $result = $result && add_field($table, $field);
     }
+
+    if ($result && $oldversion < 2013011400) {
+
+    /// Define field keepalivedelay and refresh to be added to block_livedesk_instance
+        $table = new XMLDBTable('block_livedesk_instance');
+        $field = new XMLDBField('keepalivedelay');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, '11', XMLDB_UNSIGNED, null, null, null, null, 300, 'serviceendtime');
+
+    /// Launch add field keepalivedelay
+        $result = $result && add_field($table, $field);
+
+        $field = new XMLDBField('refresh');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, '11', XMLDB_UNSIGNED, null, null, null, null, 10, 'keepalivedelay');
+
+    /// Launch add field refresh
+        $result = $result && add_field($table, $field);
+    }
 	
     return $result;
 }
