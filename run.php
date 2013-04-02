@@ -1,0 +1,197 @@
+<?php
+
+/**
+ * run.php
+ * 
+ * This file provides code for livedesk main screen.
+ *
+ * @package block-livedesk
+ * @category blocks
+ * @author Wafa Adham <admin@adham.ps>, Valery Fremaux <valery.fremaux@gmail.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * 
+ */
+
+    require_once('../../config.php');
+    print ('<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">');
+    print('<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />');// for IE8
+    $livedeskid = optional_param('ldid', null, PARAM_INT);
+    $bid = optional_param('bid', 0, PARAM_INT);
+    $courseid = optional_param('course', 1, PARAM_INT);
+    
+    if (!$course = get_record('course', 'id', "$courseid")) error('Error : Bad course ID');
+    
+    if ($course->id == SITEID){
+	    require_login();
+	} else {
+	    require_login($course);
+	}
+
+	if ($bid){
+	    $livedesk_reference = get_record('block_livedesk_blocks', 'blockid', $bid);
+	    if(empty($livedesk_reference)){
+	        print(get_string('instance_notbounded_to_livedesk', 'block_livedesk'));
+	        exit;
+	    }
+    	$livedeskid = $livedesk_reference->livedeskid;
+    	$livedesk = get_record('block_livedesk_instance', 'id', $livedeskid);
+
+	    $context = get_context_instance(CONTEXT_BLOCK, $bid);
+	    require_capability('block/livedesk:runlivedesk', $context);
+	} else {
+	    $livedesk = get_record('block_livedesk_instance', 'id', $livedeskid);
+	    require_once $CFG->dirroot.'/blocks/livedesk/classes/livedesk.class.php';
+	    $bid = 0 + livedesk::find_block_by_instance_course($livedesk->id, $course->id);
+	}        
+            
+    if(empty($livedesk)){
+        print(get_string('invalid_livedesk','block_livedesk'));
+        exit;
+    }
+        
+    //some variables neededby the js 
+    print('<script type="text/javascript">var bid = '.$bid.'</script>'); 
+    print('<script type="text/javascript">var courseid = '.$courseid.'</script>'); 
+    print('<script type="text/javascript">var livedeskid = '.$livedeskid.'</script>'); 
+    print('<script type="text/javascript">var wwwroot = \''.$CFG->wwwroot.'\'</script>'); 
+
+    print('<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxGrid/codebase/dhtmlxgrid.css">');
+    print('<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxLayout/codebase/dhtmlxlayout.css">');
+    print('<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxVault/codebase/dhtmlxvault.css">');
+    print('<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxGrid/codebase/skins/dhtmlxgrid_dhx_web.css">');
+    print('<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxToolbar/codebase/skins/dhtmlxtoolbar_dhx_web.css">');
+    print('<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxMenu/codebase/skins/dhtmlxmenu_dhx_web.css">');
+    print('<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxWindows/codebase/dhtmlxwindows.css">');
+    print('<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxWindows/codebase/skins/dhtmlxwindows_dhx_web.css">');
+    print('<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxCalendar/codebase/dhtmlxcalendar.css">');
+    print('<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxCalendar/codebase/skins/dhtmlxcalendar_dhx_skyblue.css">');
+    print('<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxLayout/codebase/skins/dhtmlxlayout_dhx_web.css">');
+    print('<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxTabbar/codebase/dhtmlxtabbar.css">');
+    print('<link rel="stylesheet" type="text/css" href="'.$CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxTabbar/codebase/skins/dhtmlxtabbar_dhx_web.css">');
+   
+    //Grid
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxGrid/codebase/dhtmlxcommon.js'); 
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxGrid/codebase/dhtmlxgrid.js' ); 
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxGrid/codebase/dhtmlxgridcell.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxGrid/codebase/ext/dhtmlxgrid_group.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxGrid/codebase/ext/dhtmlxgrid_export.js' );
+
+    //Vault
+    //require_js('/blocks/livedesk/js/dhtmlx/3.0/dhtmlxVault/codebase/dhtmlxvault.js');
+
+    //Toolbar
+   // require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxMenu/codebase/dhtmlxcommon.js' );   
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxMenu/codebase/dhtmlxmenu.js' );   
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxMenu/codebase/ext/dhtmlxmenu_ext.js' ); 
+
+    //Menu 
+   // require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxToolbar/codebase/dhtmlxcommon.js' );   
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxToolbar/codebase/dhtmlxtoolbar.js' ); 
+    
+        //Layout
+   // require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxLayout/codebase/dhtmlxcommon.js' );   
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxLayout/codebase/dhtmlxcontainer.js' ); 
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxLayout/codebase/dhtmlxlayout.js' ); 
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxLayout/codebase//patterns/dhtmlxlayout_pattern4c.js' ); 
+    
+    //Windows
+  //  require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxWindows/codebase/dhtmlxcommon.js' );   
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxWindows/codebase/dhtmlxcontainer.js' ); 
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxWindows/codebase/dhtmlxwindows.js' ); 
+
+    //Calendar
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxCalendar/codebase/dhtmlxcalendar.js' ); 
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/dhtmlx/3.0/dhtmlxGrid/codebase/excells/dhtmlxgrid_excell_dhxcalendar.js' );
+    
+    //TabBar
+    
+    //JQuery
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery-1.8.2.min.js' );
+    
+    //noty jquery plugin 
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/jquery.noty.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/bottomRight.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/bottom.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/bottomCenter.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/bottomRight.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/center.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/centerLeft.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/centerRight.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/inline.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/top.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/topCenter.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/topLeft.js' );
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/layouts/topRight.js' );
+    
+    require_js($CFG->wwwroot.'/blocks/livedesk/js/jquery_plugins/noty/themes/default.js' );
+ 
+    $strtitle = get_string('livedesk', 'livedesk');
+    require_login();
+    
+    $system_context = get_context_instance(CONTEXT_SYSTEM);
+    
+   /* 
+    $PAGE->set_pagelayout('plain');
+    $PAGE->set_context($system_context);
+    $PAGE->set_title($strtitle);
+    $PAGE->set_heading($SITE->fullname);
+   
+    $PAGE->navbar->add($strtitle,'run.php','misc');
+    
+    
+    $PAGE->set_focuscontrol('');
+    $PAGE->set_cacheable(false);
+    $PAGE->set_button('');
+    $PAGE->set_headingmenu('');
+
+    $url = new moodle_url('/blocks/liveforum/livedesk.php');
+    $PAGE->set_url($url);
+    
+    echo $OUTPUT->header();   */
+    global $NOJQUERY;
+    $NOJQUERY = true;
+    print_header();
+
+	// unfortunately not capable to use require_js here due to the CGI parameter
+    echo "<script src=\"{$CFG->wwwroot}/blocks/livedesk/js/init.php?id={$courseid}&keepalive={$livedesk->keepalivedelay}&refresh={$livedesk->refresh}\" ></script>";
+    
+   // print('<div class="header">');
+    print('<div class="livedesk-headerlogo" >
+    <img src="pix/logo.png" title="LiveDesk" />
+    </div>');
+    
+    print('<div style="  margin-left: 20px;position: relative;">');
+    print('<div id="MainToolbar"></div>'); 
+    print('<div id="toolbar" style="margin-bottom:33px;"></div>');
+    print("<br>");
+    //print('<div id="masterlayout" style="width:100%; height:100%;top:33px;">');
+    print('<div id="masterlayout" style="position: relative; top: 20px; left: 20px; width: 1200px; height: 800px; aborder: #B5CDE4 1px solid;">');
+    print('</div>');
+    
+    print('<div id="PostsContainer">');
+   
+    print('<div id="postsgrid" width="100%" height="100%" style = "background-color:white;"></div>  ');
+    print('</div>');
+    print('<div id="onlineuserscont" width="100%" height="100%" style = "background-color:white;"></div>  ');
+    print('<div id="plugins" width="100%" height="100%" style = "background-color:white;"></div>  ');
+
+    $cmd = '';
+	if (has_capability('block/livedesk:managelivedesks', get_context_instance(CONTEXT_SYSTEM))){
+	    $cmd = "<a href=\"{$CFG->wwwroot}/blocks/livedesk/edit.php?bid=".$bid."&livedeskid={$livedeskid}\"><img src=\"{$CFG->pixpath}/t/edit.gif\"></a>";
+	}
+    print('<div id="livedesk_info" width="100%" height="100%" style = "background-color:white;">');
+    print('<b>'.format_string($livedesk->name).'</b> '.$cmd.'<br/>'.format_string($livedesk->description));
+    print("</div>\n");
+    
+    print('</div>');
+
+    print('<style>th, td { padding: 0px; } </style>') ;
+    
+	add_to_log($courseid,'livedesk', 'run', 'run.php', $livedeskid, $bid, $USER->id);
+
+	$getasexcelstr = get_string('getasexcel', 'block_livedesk');
+	print "<p align=\"center\"><input type=\"button\" value=\"$getasexcelstr\" onclick=\"mygrid.toExcel('{$CFG->wwwroot}/blocks/livedesk/js/dhtmlx/3.0/grid_exporter/generate.php');\"></p>";
+
+	print_footer(); 
+  
+?>
