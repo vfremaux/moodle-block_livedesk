@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="blocks/livedesk/db" VERSION="20121229" COMMENT="XMLDB file for Moodle blocks/livedesk"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="block_livedesk_instance" COMMENT="block_livedesk_instance table retrofitted from MySQL" NEXT="block_livedesk_blocks">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="id" NEXT="description"/>
+        <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="name" NEXT="attenderreleasetime" />
+        <FIELD NAME="attenderreleasetime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" PREVIOUS="description" NEXT="stackovertime" />
+        <FIELD NAME="stackovertime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" PREVIOUS="attenderreleasetime" NEXT="resolvereleasedelay" />
+        <FIELD NAME="resolvereleasedelay" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" PREVIOUS="stackovertime" NEXT="maxstacksize" />
+        <FIELD NAME="maxstacksize" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" PREVIOUS="resolvereleasedelay" NEXT="servicestarttime" />
+        <FIELD NAME="servicestarttime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" PREVIOUS="maxstacksize" NEXT="serviceendtime" />
+        <FIELD NAME="serviceendtime" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" PREVIOUS="servicestarttime" NEXT="keepalivedelay" />
+        <FIELD NAME="keepalivedelay" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" PREVIOUS="serviceendtime" NEXT="refresh" />
+        <FIELD NAME="refresh" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" PREVIOUS="keepalivedelay" NEXT="sendnotification" />
+        <FIELD NAME="sendnotification" TYPE="int" LENGTH="1" NOTNULL="false" DEFAULT="0" SEQUENCE="false" PREVIOUS="refresh" NEXT="notificationmail" />
+        <FIELD NAME="notificationmail" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="sendnotification" NEXT="notificationtitle" />
+        <FIELD NAME="notificationtitle" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="notificationmail" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_livedesk_blocks" COMMENT="block_livedesk_blocks table retrofitted from MySQL" PREVIOUS="block_livedesk_instance" NEXT="block_livedesk_modules">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="livedeskid"/>
+        <FIELD NAME="livedeskid" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="blockid"/>
+        <FIELD NAME="blockid" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="livedeskid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_livedesk_modules" COMMENT="block_livedesk_modules table retrofitted from MySQL" PREVIOUS="block_livedesk_blocks" NEXT="block_livedesk_queue">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="cmid"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="livedeskid"/>
+        <FIELD NAME="livedeskid" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="cmid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_livedesk_queue" COMMENT="block_livedesk_queue table retrofitted from MySQL" PREVIOUS="block_livedesk_modules">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="itemid"/>
+        <FIELD NAME="itemid" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="message"/>
+        <FIELD NAME="message" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="itemid" NEXT="callerid"/>
+        <FIELD NAME="callerid" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="message" NEXT="moduleid"/>
+        <FIELD NAME="moduleid" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="callerid" NEXT="cmid"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="moduleid" NEXT="mstatus"/>
+        <FIELD NAME="mstatus" TYPE="char" LENGTH="50" NOTNULL="false" SEQUENCE="false" PREVIOUS="cmid" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" PREVIOUS="mstatus" NEXT="timeanswered"/>
+        <FIELD NAME="timeanswered" TYPE="int" LENGTH="11" NOTNULL="false" SEQUENCE="false" PREVIOUS="timecreated" NEXT="notified"/>
+        <FIELD NAME="notified" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="timeanswered" NEXT="locked"/>
+        <FIELD NAME="locked" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="notified" NEXT="lockedby"/>
+        <FIELD NAME="lockedby" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="locked" NEXT="locktime"/>
+        <FIELD NAME="locktime" TYPE="char" LENGTH="20" NOTNULL="false" SEQUENCE="false" PREVIOUS="lockedby" NEXT="priority"/>
+        <FIELD NAME="priority" TYPE="int" LENGTH="4" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="locktime" NEXT="answerby"/>
+        <FIELD NAME="answerby" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="priority" NEXT="ans_session"/>
+        <FIELD NAME="ans_session" TYPE="char" LENGTH="30" NOTNULL="false" SEQUENCE="false" PREVIOUS="answerby" NEXT="answeredbydeskid"/>
+        <FIELD NAME="answeredbydeskid" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="ans_session" NEXT="mailsent"/>
+        <FIELD NAME="mailsent" TYPE="int" LENGTH="11" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="answeredbydeskid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
