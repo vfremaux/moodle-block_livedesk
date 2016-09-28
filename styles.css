@@ -1,0 +1,169 @@
+#livedesk-info{
+	background-color:white;
+}
+
+/*
+.block.block_html .content {
+	padding:0;
+}
+
+.block.block_html .content .no-overflow {
+	padding:4px;
+}
+*/
+
+.livedesk-text{
+	text-align:center;
+	padding-top:10px;
+}
+
+.livedesk-popup{
+	font-size:12px;
+}
+
+.livedesk-popup-button{
+	margin-top:10px;
+	width:100%;
+	text-align:center;
+}
+
+.livedesk-pluginline{
+	padding-left:5px;
+}
+
+#livedesk-toolbar-wrap{
+	
+	position: relative;
+}
+
+#livedesk-toolbar{
+	
+}
+
+#masterlayout{
+	position: relative; 
+
+	height: 800px; 
+	border: #B5CDE4 1px solid;
+}
+
+#livedesk-panel{
+	background-color:white;
+	width:100%;
+	height:100%;
+}
+
+.livedesk-headerlogo{
+   float: right;
+   margin-top: 0;
+   margin-right:20px;
+}
+
+.livedesk-stat-table{
+    border: 1px solid #E8E8E8;
+    padding: 5px;
+    width: 100%;
+    margin-top:10px;
+}
+
+.livedesk-stat-table tr td{
+	padding:5px;   
+}
+
+.livedesk-stat-table tr.header td{
+ 	background-color:#555555;
+	color:white;   
+}
+
+#pluginlist-content{
+ 	padding: 10px;   
+ 	height:300px;  
+ 	overflow:auto;
+ 	border:1px solid #e8e8e8;
+ 	border-radius: 7px 7px 7px 7px;
+}
+
+#pluginlist-content .course-div{
+   	border-bottom: 2px dotted #C8C8C8;
+    margin-bottom: 5px;
+}
+
+#pluginlist-content-general{
+    padding:10px;
+}
+
+div[ida='dhxMainCont']{
+	overflow: auto !important;
+    border:0px !important;
+}
+
+div[ida='dhxMainCont'] #page-header{
+	display:none;
+}
+
+div[ida='dhxMainCont'] #navcontainer{
+	display:none;
+}
+
+div[ida='dhxMainCont'] .navbar {
+	display:none;
+}
+
+.noty_text p{
+	margin-top:0px;
+	margin-bottom:0px;
+}
+
+.locked, locked p {
+	color: #B30F0F;
+	font-weight:bold;
+}
+
+.unseen, unseen p {
+	opacity:0.5;
+}
+
+.dimmed{
+	opacity:0.5;
+}
+
+.livedeskmenu{
+ 	list-style: none outside none;
+    padding-left: 10px;
+}
+
+.online_users{
+	font-size:12px;
+}
+
+.online_users.isme{
+	color:#53CA3E;
+}
+
+#livedesk-instances-table{
+	width:80%;
+	margin:auto;
+}
+
+.livedesk-userlist{
+   margin :0px;
+}
+
+.livedesk-notification-link,
+.livedesk-notification-link:visited{
+	color:#FFD9AE;
+}
+
+#blocks-livedesk-reply .commands{
+display:none;
+}
+
+#livedesk-masterlayout{
+    height:900px;
+    padding-right:10px;
+   
+}
+
+#livedesk-postsgrid{
+    position: relative;  width: 100%; height: 100%; aborder: #B5CDE4 1px solid;
+}
