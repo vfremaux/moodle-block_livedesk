@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * @package    block_livedesk
  * @category   blocks
@@ -24,6 +22,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2010 Valery Fremaux (valery.fremaux@gmail.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Standard post install handler.
@@ -34,28 +33,32 @@ defined('MOODLE_INTERNAL') || die();
 function xmldb_block_livedesk_install() {
     global $DB;
 
+    if (defined('PHPUNIT_TEST') && PHPUNIT_TEST) {
+        return;
+    }
+
     // install core triggers
     $sql = "
         CREATE TRIGGER LiveDesk_Trigger
         AFTER INSERT ON {forum_posts}
         FOR EACH ROW
-        INSERT INTO 
+        INSERT INTO
             {block_livedesk_queue} (
-                itemid, 
-                message, 
-                callerid, 
+                itemid,
+                message,
+                callerid,
                 moduleid,
-                cmid, 
-                mstatus, 
-                timecreated, 
-                timeanswered, 
-                notified, 
-                locked, 
-                lockedby, 
-                locktime, 
-                priority, 
-                answerby, 
-                ans_session, 
+                cmid,
+                mstatus,
+                timecreated,
+                timeanswered,
+                notified,
+                locked,
+                lockedby,
+                locktime,
+                priority,
+                answerby,
+                ans_session,
                 answeredbydeskid)
         VALUES (
             new.id,
