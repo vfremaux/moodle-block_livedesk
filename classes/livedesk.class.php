@@ -131,11 +131,11 @@ class livedesk {
                     $seen_img = " <img src='pix/eye-half.png' />";     
                     $classes .= ' unseen';
                 }
-                $longmessage = htmlentities(shorten_text($entry->message, 200));                      
+                $longmessage = htmlentities(shorten_text($entry->message, 200));
                 $message = "<label class='".$classes."' title=\"$longmessage\" >".shorten_text($entry->message, 60)."</label>";
                 $modname = get_string('modulename', $module->name);
                 $modcourseshort = $DB->get_field('course', 'shortname', array('id' => $moduleinstance->course));
-                $modpix = '<img src="'.$OUTPUT->pix_url('icon', $module->name)."\" title=\"[$modcourseshort] $modname\" />"; 
+                $modpix = $OUTPUT->pix_icon('icon', '['.$modcourseshort.'] '.$modname, $module->name); 
                 $dimmedpre = ($entry->mstatus == 'discarded') ? '<div class="dimmed">' : '' ;
                 $dimmedpost = ($entry->mstatus == 'discarded') ? '</div>' : '' ;
                 $row =  '<row id="liveentry_'.$entry->id.'" bgColor="'.$bg_color.'"> 
