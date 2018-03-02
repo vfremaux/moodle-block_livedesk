@@ -162,9 +162,11 @@ echo '<script type="text/javascript">var bid = '.$bid.'</script>';
 echo '<script type="text/javascript">var courseid = '.$courseid.'</script>'; 
 echo '<script type="text/javascript">var livedeskid = '.$livedeskid.'</script>'; 
 echo '<script type="text/javascript">var wwwroot = \''.$CFG->wwwroot.'\'</script>'; 
-echo "<script src=\"{$CFG->wwwroot}/blocks/livedesk/js/init.php?id={$courseid}&keepalive={$livedesk->keepalivedelay}&refresh={$livedesk->refresh}\" ></script>";
+$params = array('id' => $courseid, 'keepalive' => $livedesk->keepalivedelay, 'refresh' => $livedesk->refresh);
+$scripturl = new moodle_url('/blocks/livedesk/js/init.php', $params);
+echo '<script src="'.$scripturl.'"></script>';
 // echo '<div class="header">';
-echo '<div class="livedesk-headerlogo" ><img src="'.$OUTPUT->pix_url('logo', 'block_livedesk').'" title="LiveDesk" /></div>';
+echo '<div class="livedesk-headerlogo" >'.$OUTPUT->pix_icon('logo', get_string('pluginname', 'block_livedesk'), 'block_livedesk').'</div>';
 echo '<div id="livedesk-toolbar-wrap">';
 echo '<div id="livedesk-maintoolbar"></div>'; 
 echo '<div id="livedesk-toolbar"></div>';
@@ -180,7 +182,8 @@ echo '<div id="livedesk-plugins" class="livedesk-panel"></div>  ';
 $cmd = '';
 
 if (has_capability('block/livedesk:managelivedesks', context_system::instance())) {
-    $cmd = "<a href=\"{$CFG->wwwroot}/blocks/livedesk/edit_instance.php?bid=".$bid."&livedeskid={$livedeskid}\"><img src=\"".$OUTPUT->pix_url('t/edit')."\"></a>";
+    $ldurl = new moodle_url('/blocks/livedesk/edit_instance.php', array('bid' => $bid, 'livedeskid' => $livedeskid));
+    $cmd = '<a href="'.$ldurl.'">'.$OUTPUT->pix_icon('t/edit', get_string('edit')).'</a>';
 }
 
 echo '<div id="livedesk-info" width="100%" height="100%">';

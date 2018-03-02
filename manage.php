@@ -107,10 +107,10 @@ if ($livedesks) {
         $row[] = $blocksattached;
         $row[] = $pluginsattached;
         $editurl = new moodle_url('/blocks/livedesk/edit_instance.php', array('course' => $course->id, 'livedeskid' => $livedesk->id));
-        $cmd = '<a href="'.$editurl.'"><img src="'.$OUTPUT->pix_url('t/edit').'"></a>';
+        $cmd = '<a href="'.$editurl.'">'.$OUTPUT->pix_icon('t/edit' get_string('edit')).'</a>';
         if (!$blocksattached) {
             $deleteurl = new moodle_url('/blocks/livedesk/manage.php', array('course' => $course->id, 'what' => 'delete', 'livedeskid' => $livedesk->id));
-            $cmd .= '&nbsp;<a href="'.$deleteurl.'"><img src="'.$OUTPUT->pix_url('t/delete').'"></a>';
+            $cmd .= '&nbsp;<a href="'.$deleteurl.'">'.$OUTPUT->pix_icon('t/delete', get_string('delete')).'</a>';
         }
         $row[] = $cmd;
         $table->data[] = $row;
@@ -120,8 +120,10 @@ if ($livedesks) {
 echo '<div id="livedesk-instances-table">';
 echo $OUTPUT->heading(get_string('livedeskmanagement', 'block_livedesk'));
 echo html_writer::table($table);
-$location = $CFG->wwwroot."/blocks/livedesk/edit_instance.php?course={$course->id}&livedeskid=0";
-echo '<p align="right"><input type="button" name="create_new_instance" value="'.get_string('createnewinstance', 'block_livedesk').'" onClick="window.location=\''.$location.'\'"  /></p>';
+$params = array('course' => $course->id, 'livedeskid' => 0);
+$location = new moodle_url('/blocks/livedesk/edit_instance.php', $params);
+echo '<p align="right">';
+echo '<input type="button" name="create_new_instance" value="'.get_string('createnewinstance', 'block_livedesk').'" onClick="window.location=\''.$location.'\'" /></p>';
 echo '</div>';
 
 echo $OUTPUT->footer();

@@ -83,15 +83,13 @@ class block_livedesk extends block_base {
         $this->content->footer = '';
         $this->content->text = '';
         if (has_capability('block/livedesk:runlivedesk', $context)) {
-            $courseparam = '';
-            if ($COURSE->id > SITEID) {
-                $courseparam = "&course=".$COURSE->id;
-            }
             if (!empty($this->config->livedeskid)) {
                 $livedeskwindow = livedesk::get_livedesk_window_name($this->config->livedeskid);
                 $this->content->text = '<p class="livedesk-text">';
-                $this->content->text .= "<a target=\"$livedeskwindow\" href=\"{$CFG->wwwroot}/blocks/livedesk/run.php?course={$COURSE->id}&bid={$this->instance->id}{$courseparam}\">";
-                $this->content->text .= '<img src="'.$OUTPUT->pix_url('logo', 'block_livedesk').'"/>';
+                $params = array('course' => $COURSE->id, 'bid' => $this->instance->id);
+                $linkurl = new moodle_url('/blocks/livedesk/run.php', $params);
+                $this->content->text .= '<a target="'.$livedeskwindow.'" href="'.$linkurl.'">';
+                $this->content->text .= $OUTPUT->pix_icon('logo', 'block_livedesk');
                 $this->content->text .= '</a></p>';
             } else {
                 $this->content->text = $OUTPUT->notification(get_string('instance_notbounded_to_livedesk', 'block_livedesk'), 'notifyproblem');
