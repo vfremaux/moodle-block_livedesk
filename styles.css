@@ -1,169 +1,156 @@
-#livedesk-info{
-	background-color:white;
+
+#livedesk-info {
+    background-color: white;
 }
 
-/*
-.block.block_html .content {
-	padding:0;
+.livedesk-text {
+    padding-top: 10px;
+    text-align: center;
 }
 
-.block.block_html .content .no-overflow {
-	padding:4px;
-}
-*/
-
-.livedesk-text{
-	text-align:center;
-	padding-top:10px;
+.livedesk-popup {
+    font-size: 12px;
 }
 
-.livedesk-popup{
-	font-size:12px;
+.livedesk-popup-button {
+    margin-top: 10px;
+    text-align: center;
+    width: 100%;
 }
 
-.livedesk-popup-button{
-	margin-top:10px;
-	width:100%;
-	text-align:center;
+.livedesk-pluginline {
+    padding-left: 5px;
 }
 
-.livedesk-pluginline{
-	padding-left:5px;
+#livedesk-toolbar-wrap {
+    position: relative;
 }
 
-#livedesk-toolbar-wrap{
-	
-	position: relative;
+#masterlayout {
+    border: #B5CDE4 1px solid;
+    height: 800px;
+    position: relative;
 }
 
-#livedesk-toolbar{
-	
+#livedesk-panel {
+    background-color: white;
+    height: 100%;
+    width: 100%;
 }
 
-#masterlayout{
-	position: relative; 
-
-	height: 800px; 
-	border: #B5CDE4 1px solid;
-}
-
-#livedesk-panel{
-	background-color:white;
-	width:100%;
-	height:100%;
-}
-
-.livedesk-headerlogo{
+.livedesk-headerlogo {
    float: right;
+   margin-right: 20px;
    margin-top: 0;
-   margin-right:20px;
 }
 
-.livedesk-stat-table{
-    border: 1px solid #E8E8E8;
+.livedesk-stat-table {
+    border: 1px solid #e8e8e8;
+    margin-top: 10px;
     padding: 5px;
     width: 100%;
-    margin-top:10px;
 }
 
-.livedesk-stat-table tr td{
-	padding:5px;   
+.livedesk-stat-table tr td {
+    padding: 5px;
 }
 
-.livedesk-stat-table tr.header td{
- 	background-color:#555555;
-	color:white;   
+.livedesk-stat-table tr.header td {
+    background-color: #555555;
+    color: white;
 }
 
-#pluginlist-content{
- 	padding: 10px;   
- 	height:300px;  
- 	overflow:auto;
- 	border:1px solid #e8e8e8;
- 	border-radius: 7px 7px 7px 7px;
+#pluginlist-content {
+     border: 1px solid #e8e8e8;
+     border-radius: 7px 7px 7px 7px;
+     height: 300px;
+     overflow: auto;
+     padding: 10px;
 }
 
-#pluginlist-content .course-div{
-   	border-bottom: 2px dotted #C8C8C8;
+#pluginlist-content .course-div {
+    border-bottom: 2px dotted #c8c8c8;
     margin-bottom: 5px;
 }
 
-#pluginlist-content-general{
-    padding:10px;
+#pluginlist-content-general {
+    padding: 10px;
 }
 
-div[ida='dhxMainCont']{
-	overflow: auto !important;
-    border:0px !important;
+div[ida='dhxMainCont'] {
+    overflow: auto !important;
+    border: 0 !important;
 }
 
-div[ida='dhxMainCont'] #page-header{
-	display:none;
+div[ida='dhxMainCont'] #page-header {
+    display: none;
 }
 
-div[ida='dhxMainCont'] #navcontainer{
-	display:none;
+div[ida='dhxMainCont'] #navcontainer {
+    display: none;
 }
 
 div[ida='dhxMainCont'] .navbar {
-	display:none;
+    display: none;
 }
 
-.noty_text p{
-	margin-top:0px;
-	margin-bottom:0px;
+.noty_text p {
+    margin-bottom: 0;
+    margin-top: 0;
 }
 
 .locked, locked p {
-	color: #B30F0F;
-	font-weight:bold;
+    color: #b30f0f;
+    font-weight: bold;
 }
 
 .unseen, unseen p {
-	opacity:0.5;
+    opacity: 0.5;
 }
 
-.dimmed{
-	opacity:0.5;
+.dimmed {
+    opacity: 0.5;
 }
 
-.livedeskmenu{
- 	list-style: none outside none;
+.livedeskmenu {
+    list-style: none outside none;
     padding-left: 10px;
 }
 
-.online_users{
-	font-size:12px;
+.online_users {
+    font-size: 12px;
 }
 
-.online_users.isme{
-	color:#53CA3E;
+.online_users.isme {
+    color: #53Ca3e;
 }
 
-#livedesk-instances-table{
-	width:80%;
-	margin:auto;
+#livedesk-instances-table {
+    margin: auto;
+    width: 80%;
 }
 
-.livedesk-userlist{
-   margin :0px;
+.livedesk-userlist {
+    margin :0;
 }
 
 .livedesk-notification-link,
-.livedesk-notification-link:visited{
-	color:#FFD9AE;
+.livedesk-notification-link:visited {
+    color:#ffd9ae;
 }
 
-#blocks-livedesk-reply .commands{
-display:none;
+#blocks-livedesk-reply .commands {
+    display: none;
 }
 
-#livedesk-masterlayout{
-    height:900px;
-    padding-right:10px;
-   
+#livedesk-masterlayout {
+    height: 900px;
+    padding-right: 10px;
 }
 
-#livedesk-postsgrid{
-    position: relative;  width: 100%; height: 100%; aborder: #B5CDE4 1px solid;
+#livedesk-postsgrid {
+    border: #b5cde4 1px solid;
+    height: 100%;
+    position: relative;
+    width: 100%;
 }
