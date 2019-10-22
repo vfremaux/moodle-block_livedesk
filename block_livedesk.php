@@ -16,6 +16,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot.'/blocks/moodleblock.class.php');
 /**
  * @package    block_livedesk
  * @category   blocks
@@ -26,12 +27,11 @@ defined('MOODLE_INTERNAL') || die();
  */
 
 
-require_once $CFG->dirroot.'/blocks/livedesk/classes/livedesk.class.php';
+require_once($CFG->dirroot.'/blocks/livedesk/classes/livedesk.class.php');
 
 // Pull out the noty libraries for all pages.
 
-require_once $CFG->dirroot.'/blocks/moodleblock.class.php';
-require_once $CFG->dirroot.'/blocks/livedesk/lib.php';
+require_once($CFG->dirroot.'/blocks/livedesk/lib.php');
 
 /**
  * Form for editing HTML block instances.
@@ -69,47 +69,43 @@ class block_livedesk extends block_base {
 
         require_once($CFG->libdir . '/filelib.php');
 
-        if ($this->content !== NULL) {
+        if ($this->content !== null) {
             return $this->content;
         }
 
         $system_context = context_system::instance();
         $context = context_block::instance($this->instance->id);
-        $filteropt = new stdClass;
-        $filteropt->overflowdiv = true;
-        $filteropt->noclean = true;
 
         $this->content = new stdClass;
         $this->content->footer = '';
         $this->content->text = '';
+        $template = new StdClass;
         if (has_capability('block/livedesk:runlivedesk', $context)) {
             if (!empty($this->config->livedeskid)) {
-                $livedeskwindow = livedesk::get_livedesk_window_name($this->config->livedeskid);
-                $this->content->text = '<p class="livedesk-text">';
+                $template->canrun = true;
+                $template->livedeskwindow = livedesk::get_livedesk_window_name($this->config->livedeskid);
                 $params = array('course' => $COURSE->id, 'bid' => $this->instance->id);
-                $linkurl = new moodle_url('/blocks/livedesk/run.php', $params);
-                $this->content->text .= '<a target="'.$livedeskwindow.'" href="'.$linkurl.'">';
-                $this->content->text .= $OUTPUT->pix_icon('logo', 'block_livedesk');
-                $this->content->text .= '</a></p>';
+                $template->linkurl = new moodle_url('/blocks/livedesk/run.php', $params);
+                $template->logoimgurl = $OUTPUT->image_url('logo', 'block_livedesk');
             } else {
-                $this->content->text = $OUTPUT->notification(get_string('instance_notbounded_to_livedesk', 'block_livedesk'), 'notifyproblem');
+                $template->nolivedesks = true;
+                $msg = get_string('instancenotboundedtolivedesk', 'block_livedesk');
+                $template->nolivedesknotification = $OUTPUT->notification($msg, 'notifyproblem');
             }
         }
         if (has_capability('block/livedesk:managelivedesks', $system_context)) {
-            $manageinstancesstr = get_string('manageinstances', 'block_livedesk');
-            $this->content->text .= '<div>';
-            $this->content->text .= "<ul class='livedeskmenu'>";
-            $this->content->text .= "<li><a href=\"{$CFG->wwwroot}/blocks/livedesk/manage.php?course={$COURSE->id}\" ><b>{$manageinstancesstr}</b></a></li>";
+            $template->canmanage = true;
+            $template->manageinstancesstr = get_string('manageinstances', 'block_livedesk');
+            $template->manageurl = new moodle_url('/blocks/livedesk/manage.php', array('course' => $COURSE->id));
         }
         if (has_capability('block/livedesk:createlivedesk', $system_context)) {
-            $addlivedeskstr = get_string('adddeskinstances', 'block_livedesk');
-            $this->content->text .= "<li><a href=\"{$CFG->wwwroot}/blocks/livedesk/edit_instance.php?livedeskid=0&course={$COURSE->id}\" >$addlivedeskstr</a></li>";
-            $this->content->text .= '</ul>';
-            $this->content->text .= '</div>';
+            $template->cancreate = true;
+            $template->addlivedeskstr = get_string('adddeskinstances', 'block_livedesk');
+            $params = array('livedeskid' => 0, 'course' => $COURSE->id);
+            $template->createurl = new moodle_url('/blocks/livedesk/edit_instance.php', $params);
         }
 
-        unset($filteropt); // memory footprint
-
+        $this->content->text = $OUTPUT->render_from_template('block_livedesk/block_content', $template);
         return $this->content;
     }
 
@@ -145,11 +141,11 @@ class block_livedesk extends block_base {
     }
 
     /**
-    * processes some cron cleanup and sends unsent service notifications
-    * locked messages for too long must be released
-    * too old messages (stack over time) must be discarded
-    * do a per livedsk processing with licedesk instance characteristics
-    */
+     * processes some cron cleanup and sends unsent service notifications
+     * locked messages for too long must be released
+     * too old messages (stack over time) must be discarded
+     * do a per livedsk processing with licedesk instance characteristics
+     */
     public static function crontask() {
         global $CFG, $DB, $SITE;
 
@@ -307,7 +303,7 @@ class block_livedesk extends block_base {
     }
 
     /**
-     *
+     * Call hooks in other plugins that have to deal with special additional livedesk implementation
      */
     static public function call_plugins_function($fname, $args = null, $plugin = null) {
         global $CFG;
@@ -333,24 +329,45 @@ class block_livedesk extends block_base {
         }
     }
 
-    static public function check_jquery() {
-        global $PAGE, $OUTPUT, $CFG, $JQUERYVERSION;
+    public static function get_livedesk_javascript() {
+        global $PAGE, $JQUERYNOTY;
 
-        if ($CFG->version >= 2013051400) {
-            return; // Moodle 2.5 natively loads JQuery
+        $config = get_config('block_livedesk');
+        if (empty($config->notification_theme)) {
+            $config->notification_theme = 'mint';
+            set_config('notification_theme', 'mint', 'block_livedesk');
         }
 
-        $current = '1.8.2';
-
-        if (empty($JQUERYVERSION)) {
-            $JQUERYVERSION = '1.8.2';
-            $PAGE->requires->js('/blocks/livedesk/js/jquery-'.$current.'.min.js', true);
-        } else {
-            if ($JQUERYVERSION < $current) {
-                debugging('the previously loaded version of jquery is lower than required. This may cause issues to livedesk. Programmers might consider upgrading JQuery version in the component that preloads JQuery library.', DEBUG_DEVELOPER, array('notrace'));
-            }
+        if (AJAX_SCRIPT) {
+            return;
         }
+
+        if (!empty($JQUERYNOTY)) {
+            return;
+        }
+
+        $JQUERYNOTY = true;
+
+        // Noty jquery plugin.
+        /*
+        $PAGE->requires->jquery();
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/jquery.noty.js', true);
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/bottomRight.js', true );
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/bottom.js', true );
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/bottomCenter.js', true );
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/bottomRight.js', true );
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/center.js', true );
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/centerLeft.js', true );
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/centerRight.js', true );
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/inline.js', true );
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/top.js', true );
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/topCenter.js', true );
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/topLeft.js', true );
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/topRight.js', true );
+        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/themes/default.js', true ); 
+        */
+        $PAGE->requires->js('/blocks/livedesk/js/noty32/lib/noty.js', true);
+        $PAGE->requires->css('/blocks/livedesk/js/noty32/lib/noty.css');
+        $PAGE->requires->css('/blocks/livedesk/js/noty32/lib/themes/'.$config->notification_theme.'.css');
     }
 }
-
-block_livedesk_setup_theme_requires();

@@ -56,7 +56,7 @@ require_capability('block/livedesk:managelivedesks', $systemcontext);
 $action = optional_param('what', '', PARAM_TEXT);
 
 if ($action) {
-    include 'manage.controller.php';
+    require($CFG->dirroot.'/blocks/livedesk/manage.controller.php');
 }
 
 $PAGE->set_pagelayout('standard');
@@ -106,10 +106,12 @@ if ($livedesks) {
 
         $row[] = $blocksattached;
         $row[] = $pluginsattached;
-        $editurl = new moodle_url('/blocks/livedesk/edit_instance.php', array('course' => $course->id, 'livedeskid' => $livedesk->id));
-        $cmd = '<a href="'.$editurl.'">'.$OUTPUT->pix_icon('t/edit' get_string('edit')).'</a>';
+        $params = array('course' => $course->id, 'livedeskid' => $livedesk->id);
+        $editurl = new moodle_url('/blocks/livedesk/edit_instance.php', $params);
+        $cmd = '<a href="'.$editurl.'">'.$OUTPUT->pix_icon('t/edit', get_string('edit')).'</a>';
         if (!$blocksattached) {
-            $deleteurl = new moodle_url('/blocks/livedesk/manage.php', array('course' => $course->id, 'what' => 'delete', 'livedeskid' => $livedesk->id));
+            $params = array('course' => $course->id, 'what' => 'delete', 'livedeskid' => $livedesk->id);
+            $deleteurl = new moodle_url('/blocks/livedesk/manage.php', $params);
             $cmd .= '&nbsp;<a href="'.$deleteurl.'">'.$OUTPUT->pix_icon('t/delete', get_string('delete')).'</a>';
         }
         $row[] = $cmd;
@@ -117,13 +119,13 @@ if ($livedesks) {
     }
 }
 
-echo '<div id="livedesk-instances-table">';
-echo $OUTPUT->heading(get_string('livedeskmanagement', 'block_livedesk'));
-echo html_writer::table($table);
+$template = new StdClass;
+$template->heading = $OUTPUT->heading(get_string('livedeskmanagement', 'block_livedesk'));
+$template->managetable = html_writer::table($table);
 $params = array('course' => $course->id, 'livedeskid' => 0);
-$location = new moodle_url('/blocks/livedesk/edit_instance.php', $params);
-echo '<p align="right">';
-echo '<input type="button" name="create_new_instance" value="'.get_string('createnewinstance', 'block_livedesk').'" onClick="window.location=\''.$location.'\'" /></p>';
-echo '</div>';
+$template->location = new moodle_url('/blocks/livedesk/edit_instance.php', $params);
+$template->createnewinstancestr = get_string('createnewinstance', 'block_livedesk');
+
+echo $OUTPUT->render_from_template('block_livedesk/manage', $template);
 
 echo $OUTPUT->footer();
