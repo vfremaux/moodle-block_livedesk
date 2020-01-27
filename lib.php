@@ -28,20 +28,8 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * This function is given for theme setup where js requirement can be done on all moodle pages.
  */
-function block_livedesk_before_http_headers() {
-    block_livedesk_setup_theme_requires();
-}
-
-/**
- * This function is given for theme setup where js requirement can be done on all moodle pages.
- */
 function block_livedesk_setup_theme_requires() {
-    global $CFG, $DB;
-
-    $block = $DB->get_record('block', array('name' => 'livedesk'));
-    if (!$block->visible) {
-        return;
-    }
+    global $CFG;
 
     require_once($CFG->dirroot.'/blocks/livedesk/block_livedesk.php');
 
@@ -71,12 +59,13 @@ function block_livedesk_setup_theme_notification() {
     }
 
     // Out of working hours.
-    $startmintime = $config->service_timerange_start_h * 60 + $config->service_timerange_start_m;
+    print_object($config);
+    $startmintime = $config->service_timerange_start_h * 60 + @$config->service_timerange_start_m;
     if ((strftime('%H') * 60 + strftime('%M')) < $startmintime) {
         return;
     }
 
-    $endmintime = $config->service_timerange_end_h * 60 + $config->service_timerange_end_m;
+    $endmintime = $config->service_timerange_end_h * 60 + @$config->service_timerange_end_m;
     if ((strftime('%H') * 60 + strftime('%M')) < $endmintime) {
         return;
     }

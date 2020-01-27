@@ -32,11 +32,13 @@ defined('MOODLE_INTERNAL') || die();
  * to the livedesk queue.
  */
 function xmldb_block_livedesk_install() {
-    global $DB, $CFG;
+    global $DB;
 
     // install core triggers.
     $sql = "
-        CREATE TRIGGER LiveDesk_Trigger
+        CREATE
+        DEFINER CURRENT_USER
+        TRIGGER IF NOT EXISTS LiveDesk_Trigger
         AFTER INSERT ON {forum_posts}
         FOR EACH ROW
         INSERT INTO
@@ -85,7 +87,9 @@ function xmldb_block_livedesk_install() {
     $DB->execute($sql);
 
     $sql = "
-        CREATE TRIGGER LiveDesk_Trigger_Update_Discussion
+        CREATE 
+        DEFINER CURRENT_USER
+        TRIGGER IF NOT EXISTS LiveDesk_Trigger_Update_Discussion
         AFTER INSERT ON {forum_discussions}
         FOR EACH ROW
         UPDATE
@@ -107,6 +111,13 @@ function xmldb_block_livedesk_install() {
 
     $DB->execute($sql);
 
+    block_livedesk::call_plugins_function('livedesk_on_install');
+    set_config('block_livedesk_late_install', 1);
+}
+
+function xmldb_block_livedesk_late_install() {
+    global $DB, $CFG;
+
     $context = context_system::instance();
 
     // Create the livedeskoperator role if absent.
@@ -116,12 +127,11 @@ function xmldb_block_livedesk_install() {
         $roledesc = new lang_string('livedeskoperator_desc', 'block_livedesk', '', $CFG->lang);
         $livedeskopid = create_role($rolestr->out(), 'livedeskoperator', str_replace("'", "\\'", $roledesc->out()));
         set_role_contextlevels($livedeskopid, array(CONTEXT_SYSTEM));
-        role_change_permission($livedeskopid, $context, 'block/livedesk:runlivedesk', CAP_ALLOW);
-        role_change_permission($livedeskopid, $context, 'block/livedesk:managelivedesk', CAP_ALLOW);
-        role_change_permission($livedeskopid, $context, 'block/livedesk:viewuserstatistics', CAP_ALLOW);
-        role_change_permission($livedeskopid, $context, 'block/livedesk:viewinstancestatistics', CAP_ALLOW);
-        role_change_permission($livedeskopid, $context, 'block/livedesk:viewlivedeskstatistics', CAP_ALLOW);
     }
 
-    block_livedesk::call_plugins_function('livedesk_on_install');
+    role_change_permission($livedeskopid, $context, 'block/livedesk:runlivedesk', CAP_ALLOW);
+    role_change_permission($livedeskopid, $context, 'block/livedesk:managelivedesk', CAP_ALLOW);
+    role_change_permission($livedeskopid, $context, 'block/livedesk:viewuserstatistics', CAP_ALLOW);
+    role_change_permission($livedeskopid, $context, 'block/livedesk:viewinstancestatistics', CAP_ALLOW);
+    role_change_permission($livedeskopid, $context, 'block/livedesk:viewlivedeskstatistics', CAP_ALLOW);
 }

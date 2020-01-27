@@ -57,7 +57,11 @@ class block_livedesk extends block_base {
     }
 
     public function specialization() {
-        $this->title = isset($this->config->title) ? format_string($this->config->title) : format_string(get_string('livedesk', 'block_livedesk'));
+        if (isset($this->config->title)) {
+            $this->title = format_string($this->config->title);
+        } else {
+            format_string(get_string('livedesk', 'block_livedesk'));
+        }
     }
 
     public function instance_allow_multiple() {
@@ -218,7 +222,7 @@ class block_livedesk extends block_base {
             if ($livedesk->maxstacksize) {
                 mtrace("truncating queue to $livedesk->maxstacksize entries.");
                 $sql = "
-                    SELECT 
+                    SELECT
                         id,
                         timecreated,
                         timeanswered
@@ -227,7 +231,7 @@ class block_livedesk extends block_base {
                     WHERE
                         cmid IN ('$monitored_plugins_cs')
                     ORDER BY
-                        timecreated DESC, 
+                        timecreated DESC,
                         timeanswered DESC,
                         id DESC
                 ";
