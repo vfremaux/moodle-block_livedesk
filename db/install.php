@@ -87,7 +87,7 @@ function xmldb_block_livedesk_install() {
     $DB->execute($sql);
 
     $sql = "
-        CREATE 
+        CREATE
         DEFINER CURRENT_USER
         TRIGGER IF NOT EXISTS LiveDesk_Trigger_Update_Discussion
         AFTER INSERT ON {forum_discussions}

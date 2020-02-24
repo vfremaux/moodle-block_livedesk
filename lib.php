@@ -28,8 +28,20 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * This function is given for theme setup where js requirement can be done on all moodle pages.
  */
+function block_livedesk_before_http_headers() {
+    block_livedesk_setup_theme_requires();
+}
+
+/**
+ * This function is given for theme setup where js requirement can be done on all moodle pages.
+ */
 function block_livedesk_setup_theme_requires() {
-    global $CFG;
+    global $CFG, $DB;
+
+    $block = $DB->get_record('block', array('name' => 'livedesk'));
+    if (!$block->visible) {
+        return;
+    }
 
     require_once($CFG->dirroot.'/blocks/livedesk/block_livedesk.php');
 
@@ -46,12 +58,19 @@ function block_livedesk_setup_theme_requires() {
 function block_livedesk_setup_theme_notification() {
     global $USER, $COURSE, $DB, $PAGE, $SESSION;
 
+    if ($PAGE->pagelayout == 'embedded') {
+        debug_trace('Livedesk notifs off because enbedded');
+        return;
+    }
+
     $config = get_config('block_livedesk');
 
     // Session is initiated by the current user launching a livedesk board.
     if (empty($SESSION->livedesk->session)) {
         return;
     }
+
+    // Livedesk session is over.
     $lasttickguard = $SESSION->livedesk->session + $config->keepalive_delay + 60;
     if (!empty($SESSION->livedesk->session) && (time() > $lasttickguard)) {
         unset($SESSION->livedesk->session);
@@ -59,13 +78,12 @@ function block_livedesk_setup_theme_notification() {
     }
 
     // Out of working hours.
-    print_object($config);
-    $startmintime = $config->service_timerange_start_h * 60 + @$config->service_timerange_start_m;
+    $startmintime = $config->service_timerange_start_h * 60 + $config->service_timerange_start_m;
     if ((strftime('%H') * 60 + strftime('%M')) < $startmintime) {
         return;
     }
 
-    $endmintime = $config->service_timerange_end_h * 60 + @$config->service_timerange_end_m;
+    $endmintime = $config->service_timerange_end_h * 60 + $config->service_timerange_end_m;
     if ((strftime('%H') * 60 + strftime('%M')) < $endmintime) {
         return;
     }
