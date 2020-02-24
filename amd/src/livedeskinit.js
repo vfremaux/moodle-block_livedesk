@@ -353,7 +353,6 @@ define(['jquery', 'core/config', 'core/str', 'core/log'], function ($, cfg, str,
             url += 'item=' + item + '&';
             url += 'state=' + state + '&';
             url += 'bid=' + livedesk.params['bid'];
-            /* url = 'ajax/service.php?action=change_state&item=' + item + '&state=' + state + '&bid=' + bid; */
             $.post(url, function() {});
             livedesk.refreshGrid();
             return true;
