@@ -57,7 +57,11 @@ class block_livedesk extends block_base {
     }
 
     public function specialization() {
-        $this->title = isset($this->config->title) ? format_string($this->config->title) : format_string(get_string('livedesk', 'block_livedesk'));
+        if (isset($this->config->title)) {
+            $this->title = format_string($this->config->title);
+        } else {
+            format_string(get_string('livedesk', 'block_livedesk'));
+        }
     }
 
     public function instance_allow_multiple() {
@@ -218,7 +222,7 @@ class block_livedesk extends block_base {
             if ($livedesk->maxstacksize) {
                 mtrace("truncating queue to $livedesk->maxstacksize entries.");
                 $sql = "
-                    SELECT 
+                    SELECT
                         id,
                         timecreated,
                         timeanswered
@@ -227,7 +231,7 @@ class block_livedesk extends block_base {
                     WHERE
                         cmid IN ('$monitored_plugins_cs')
                     ORDER BY
-                        timecreated DESC, 
+                        timecreated DESC,
                         timeanswered DESC,
                         id DESC
                 ";
@@ -348,24 +352,6 @@ class block_livedesk extends block_base {
 
         $JQUERYNOTY = true;
 
-        // Noty jquery plugin.
-        /*
-        $PAGE->requires->jquery();
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/jquery.noty.js', true);
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/bottomRight.js', true );
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/bottom.js', true );
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/bottomCenter.js', true );
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/bottomRight.js', true );
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/center.js', true );
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/centerLeft.js', true );
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/centerRight.js', true );
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/inline.js', true );
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/top.js', true );
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/topCenter.js', true );
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/topLeft.js', true );
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/layouts/topRight.js', true );
-        $PAGE->requires->js('/blocks/livedesk/js/jquery_plugins/noty/themes/default.js', true ); 
-        */
         $PAGE->requires->js('/blocks/livedesk/js/noty32/lib/noty.js', true);
         $PAGE->requires->css('/blocks/livedesk/js/noty32/lib/noty.css');
         $PAGE->requires->css('/blocks/livedesk/js/noty32/lib/themes/'.$config->notification_theme.'.css');

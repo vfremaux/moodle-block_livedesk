@@ -70,13 +70,13 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext($key, $label, $desc, $default, PARAM_INT));
 
     $keyh = 'block_livedesk/service_timerange_start_h';
-    $keym = 'block_livedesk_service_timerange_start_m';
+    $keym = 'service_timerange_start_m';
     $label = get_string('configservicetimerangestart', 'block_livedesk');
     $desc = get_string('configservicetimerangestart_desc', 'block_livedesk');
     $settings->add(new admin_setting_configtime($keyh, $keym, $label, $desc, null));
 
     $keyh = 'block_livedesk/service_timerange_end_h';
-    $keym = 'block_livedesk_service_timerange_end_m';
+    $keym = 'service_timerange_end_m';
     $label = get_string('configservicetimerangeend', 'block_livedesk');
     $desc = get_string('configservicetimerangeend_desc', 'block_livedesk');
     $settings->add(new admin_setting_configtime($keyh, $keym, $label, $desc, null));

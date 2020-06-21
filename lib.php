@@ -58,12 +58,19 @@ function block_livedesk_setup_theme_requires() {
 function block_livedesk_setup_theme_notification() {
     global $USER, $COURSE, $DB, $PAGE, $SESSION;
 
+    if ($PAGE->pagelayout == 'embedded') {
+        debug_trace('Livedesk notifs off because enbedded');
+        return;
+    }
+
     $config = get_config('block_livedesk');
 
     // Session is initiated by the current user launching a livedesk board.
     if (empty($SESSION->livedesk->session)) {
         return;
     }
+
+    // Livedesk session is over.
     $lasttickguard = $SESSION->livedesk->session + $config->keepalive_delay + 60;
     if (!empty($SESSION->livedesk->session) && (time() > $lasttickguard)) {
         unset($SESSION->livedesk->session);

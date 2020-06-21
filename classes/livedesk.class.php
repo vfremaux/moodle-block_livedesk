@@ -413,6 +413,10 @@ class livedesk {
     static function keep_me_alive($livedeskid) {
         global $DB, $SESSION;
 
+        if (!isset($SESSION->livedesk)) {
+            $SESSION->livedesk = new StdClass;
+        }
+
         $SESSION->livedesk->session = time();
 
         $livedesk = $DB->get_record('block_livedesk_instance', array('id' => $livedeskid));

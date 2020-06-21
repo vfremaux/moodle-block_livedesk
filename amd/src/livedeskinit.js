@@ -315,7 +315,7 @@ define(['jquery', 'core/config', 'core/str', 'core/log'], function ($, cfg, str,
                     win.setText('Statistics');
                     // dhxWins.window('view_statistics').setText('Statistics');
                     var statsurl = cfg.wwwroot + '/blocks/livedesk/statistics.php?';
-                    statsurl += 'bid=' + bid;
+                    statsurl += 'bid=' + livedesk.params['bid'];
                     win.attachURL(statsurl, true);
                     // dhxWins.window('view_statistics').attachURL(statsurl, true);
                     return true;
@@ -353,7 +353,6 @@ define(['jquery', 'core/config', 'core/str', 'core/log'], function ($, cfg, str,
             url += 'item=' + item + '&';
             url += 'state=' + state + '&';
             url += 'bid=' + livedesk.params['bid'];
-            /* url = 'ajax/service.php?action=change_state&item=' + item + '&state=' + state + '&bid=' + bid; */
             $.post(url, function() {});
             livedesk.refreshGrid();
             return true;
