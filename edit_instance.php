@@ -54,6 +54,8 @@ $PAGE->set_context($system_context);
 
 require_capability('block/livedesk:createlivedesk', $system_context);
 
+$config = get_config('block_livedesk');
+
 // Form controller
 $livedeskform = new livedesk_form();
 if ($livedeskform->is_cancelled()) {
@@ -117,6 +119,13 @@ if ($livedeskid > 0) {
     $livedesk_obj->bid = $bid;
     $livedesk_obj->name = get_string('newlivedesk', 'block_livedesk');
     $livedesk_obj->course = $course->id; // maintain course context
+    $livedesk_obj->resolvereleasedelay = $config->resolving_post_release;
+    $livedesk_obj->attenderreleasetime = $config->attender_release_time;
+    $livedesk_obj->attenderreleasetime = $config->attender_release_time;
+    $livedesk_obj->stackovertime = $config->stack_over_time;
+    $livedesk_obj->maxstacksize = $config->max_stack_size;
+    $livedesk_obj->keepalivedelay = $config->keepalive_delay;
+    $livedesk_obj->refresh = $config->refresh;
     $livedeskform->set_data($livedesk_obj);
 }
 

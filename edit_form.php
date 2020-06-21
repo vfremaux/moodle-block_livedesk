@@ -46,7 +46,7 @@ class block_livedesk_edit_form extends block_edit_form {
         if (has_capability('block/livedesk:createlivedesk', $system_context)) {
             $newinstancestr = get_string('createnewinstance', 'block_livedesk');
             $html = '<a href="'.$location.'">';
-            $hrml .= '<input type="button" name="create_new_instance" value="'.$newinstancestr.'"  />';
+            $html .= '<input type="button" name="create_new_instance" value="'.$newinstancestr.'"  />';
             $html .= '</a>';
         }
 
