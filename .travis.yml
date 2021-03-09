@@ -18,14 +18,15 @@ cache:
     - $HOME/.npm
 
 php:
- - 7.1
+ - 7.2
 
 env:
-  global:
-    - MOODLE_BRANCH=MOODLE_35_STABLE
-  matrix:
-    - DB=mariadb
-    - DB=pgsql
+ global:
+  - MOODLE_BRANCH=MOODLE_35_STABLE
+  - PLUGINS_BRANCH=MOODLE_35_WORKING
+ matrix:
+  - DB=pgsql
+  - DB=mariadb
 
 before_install:
   - phpenv config-rm xdebug.ini
@@ -45,8 +46,8 @@ script:
   - moodle-plugin-ci codechecker
   - moodle-plugin-ci validate
   - moodle-plugin-ci savepoints
-  - moodle-plugin-ci mustache
-#  - moodle-plugin-ci phpdoc
+#  - moodle-plugin-ci mustache
   - moodle-plugin-ci grunt
-  - moodle-plugin-ci phpunit
+#  - moodle-plugin-ci phpdoc
+#  - moodle-plugin-ci phpunit
 #  - moodle-plugin-ci behat

@@ -37,7 +37,7 @@ function xmldb_block_livedesk_install() {
     // install core triggers.
     $sql = "
         CREATE
-        DEFINER CURRENT_USER
+        DEFINER = CURRENT_USER()
         TRIGGER IF NOT EXISTS LiveDesk_Trigger
         AFTER INSERT ON {forum_posts}
         FOR EACH ROW
@@ -88,7 +88,7 @@ function xmldb_block_livedesk_install() {
 
     $sql = "
         CREATE
-        DEFINER CURRENT_USER
+        DEFINER = CURRENT_USER()
         TRIGGER IF NOT EXISTS LiveDesk_Trigger_Update_Discussion
         AFTER INSERT ON {forum_discussions}
         FOR EACH ROW
