@@ -1,0 +1,25 @@
+
+<!-- livedesk/block_content -->
+{{#canrun}}
+<p class="livedesk-text">
+    <a target="{{{livedeskwindow}}}" href="{{{linkurl}}}"><img src="{{{logoimgurl}}}" /></a>
+
+</p>
+{{/canrun}}
+
+{{#nolivedesks}}
+   {{{nolivedesknotification}}}
+{{/nolivedesks}}
+
+{{#canmanage}}
+<div>
+    <ul class="livedeskmenu">
+        <li><a href="{{manageurl}}" ><b>{{manageinstancesstr}}</b></a></li>
+
+        {{#cancreate}}
+        <li><a href="{{{createurl}}}" >{{addlivedeskstr}}</a></li>
+        {{/cancreate}}
+    </ul>
+</div>
+{{/canmanage}}
+<!-- /livedesk/block_content -->

@@ -34,28 +34,30 @@ defined('MOODLE_INTERNAL') || die();
 function xmldb_block_livedesk_install() {
     global $DB;
 
-    // install core triggers
+    // install core triggers.
     $sql = "
-        CREATE TRIGGER LiveDesk_Trigger
+        CREATE
+        DEFINER = CURRENT_USER()
+        TRIGGER IF NOT EXISTS LiveDesk_Trigger
         AFTER INSERT ON {forum_posts}
         FOR EACH ROW
-        INSERT INTO 
+        INSERT INTO
             {block_livedesk_queue} (
-                itemid, 
-                message, 
-                callerid, 
+                itemid,
+                message,
+                callerid,
                 moduleid,
-                cmid, 
-                mstatus, 
-                timecreated, 
-                timeanswered, 
-                notified, 
-                locked, 
-                lockedby, 
-                locktime, 
-                priority, 
-                answerby, 
-                ans_session, 
+                cmid,
+                mstatus,
+                timecreated,
+                timeanswered,
+                notified,
+                locked,
+                lockedby,
+                locktime,
+                priority,
+                answerby,
+                ans_session,
                 answeredbydeskid)
         VALUES (
             new.id,
@@ -77,7 +79,7 @@ function xmldb_block_livedesk_install() {
                  cm.module = m.id AND
                  m.name = 'forum' AND
                  fd.forum = cm.instance AND
-                 fd.id = new.discussion ),
+                 fd.id = new.discussion),
              'new',
              UNIX_TIMESTAMP(now()),
              0,0,0,0,0,10,0,0,0)
@@ -85,7 +87,9 @@ function xmldb_block_livedesk_install() {
     $DB->execute($sql);
 
     $sql = "
-        CREATE TRIGGER LiveDesk_Trigger_Update_Discussion
+        CREATE
+        DEFINER = CURRENT_USER()
+        TRIGGER IF NOT EXISTS LiveDesk_Trigger_Update_Discussion
         AFTER INSERT ON {forum_discussions}
         FOR EACH ROW
         UPDATE
@@ -108,4 +112,26 @@ function xmldb_block_livedesk_install() {
     $DB->execute($sql);
 
     block_livedesk::call_plugins_function('livedesk_on_install');
+    set_config('block_livedesk_late_install', 1);
+}
+
+function xmldb_block_livedesk_late_install() {
+    global $DB, $CFG;
+
+    $context = context_system::instance();
+
+    // Create the livedeskoperator role if absent.
+    // Use platform install language for rôle name and description.
+    if (!$DB->record_exists('role', array('shortname' => 'livedeskoperator'))) {
+        $rolestr = new lang_string('livedeskoperator', 'block_livedesk', '', $CFG->lang);
+        $roledesc = new lang_string('livedeskoperator_desc', 'block_livedesk', '', $CFG->lang);
+        $livedeskopid = create_role($rolestr->out(), 'livedeskoperator', str_replace("'", "\\'", $roledesc->out()));
+        set_role_contextlevels($livedeskopid, array(CONTEXT_SYSTEM));
+    }
+
+    role_change_permission($livedeskopid, $context, 'block/livedesk:runlivedesk', CAP_ALLOW);
+    role_change_permission($livedeskopid, $context, 'block/livedesk:managelivedesk', CAP_ALLOW);
+    role_change_permission($livedeskopid, $context, 'block/livedesk:viewuserstatistics', CAP_ALLOW);
+    role_change_permission($livedeskopid, $context, 'block/livedesk:viewinstancestatistics', CAP_ALLOW);
+    role_change_permission($livedeskopid, $context, 'block/livedesk:viewlivedeskstatistics', CAP_ALLOW);
 }

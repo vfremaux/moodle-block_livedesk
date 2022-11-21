@@ -38,9 +38,9 @@ require_once($CFG->dirroot.'/blocks/livedesk/classes/livedesk.class.php');
 
 require_login();
 
-$instance_id = optional_param('bid', 0, PARAM_INT);
+$instanceid = optional_param('bid', 0, PARAM_INT);
 
-$system_context = context_system::instance();
+$systemcontext = context_system::instance();
 
 // Livedesk statics
 
@@ -53,18 +53,18 @@ $userstatsstr = get_string('userstats', 'block_livedesk');
 
 $url = new moodle_url('/blocks/livedesk/statistics.php');
 $PAGE->set_pagelayout('embedded');
-$PAGE->set_context($system_context);
+$PAGE->set_context($systemcontext);
 $PAGE->set_url($url);
 
 // Do NOT try to use any header/footer call as we are embeded.
 
 echo $OUTPUT->heading(get_string('stats', 'block_livedesk'));
 
-if (has_capability('block/livedesk:viewlivedeskstatistics', $system_context)){
+if (has_capability('block/livedesk:viewlivedeskstatistics', $systemcontext)) {
     $table = new html_table();
     $table->head = array("<b>$livedeskstatsstr</b>", '');
-    $table->width = "80%";
-    $table->size = array("90%", "10%");
+    $table->width = '80%';
+    $table->size = array('90%', '10%');
     $table->align = array('left', 'right');
     $table->data[] = array($attendedpostscountstr, livedesk::get_livedesk_stat_attendedposts('SYSTEM'));
     $table->data[] = array($maxattendedpostsbysessionstr, livedesk::get_livedesk_stat_maxpostsession('SYSTEM'));
@@ -74,28 +74,28 @@ if (has_capability('block/livedesk:viewlivedeskstatistics', $system_context)){
 
 //aggregated instance statics
 
-if (has_capability('block/livedesk:viewinstancestatistics', $system_context)) {
+if (has_capability('block/livedesk:viewinstancestatistics', $systemcontext)) {
     $table = new html_table();
     $table->head = array("<b>$instancestatsstr</b>", '');
-    $table->width = "80%";
-    $table->size = array("90%", "10%");
+    $table->width = '80%';
+    $table->size = array('90%', '10%');
     $table->align = array('left', 'right');
-    $table->data[] = array($attendedpostscountstr, livedesk::get_livedesk_stat_attendedposts('INSTANCE',$instance_id));
-    $table->data[] = array($maxattendedpostsbysessionstr, livedesk::get_livedesk_stat_maxpostsession('INSTANCE',$instance_id));
-    $table->data[] = array($averageanswerdelaystr, livedesk::get_livedesk_stat_avganswertime('INSTANCE',$instance_id));
+    $table->data[] = array($attendedpostscountstr, livedesk::get_livedesk_stat_attendedposts('INSTANCE', $instanceid));
+    $table->data[] = array($maxattendedpostsbysessionstr, livedesk::get_livedesk_stat_maxpostsession('INSTANCE', $instanceid));
+    $table->data[] = array($averageanswerdelaystr, livedesk::get_livedesk_stat_avganswertime('INSTANCE', $instanceid));
     echo html_writer::table($table);
 }
 
 // my user statics
 
-if(has_capability('block/livedesk:viewuserstatistics',$system_context)) {
+if (has_capability('block/livedesk:viewuserstatistics', $systemcontext)) {
     $table = new html_table();
     $table->head = array("<b>$userstatsstr</b>", '');
-    $table->width = "80%";
-    $table->size = array("90%", "10%");
+    $table->width = '80%';
+    $table->size = array('90%', '10%');
     $table->align = array('left', 'right');
-    $table->data[] = array($attendedpostscountstr, livedesk::get_livedesk_stat_attendedposts('USER', NULL, $USER->id));
-    $table->data[] = array($maxattendedpostsbysessionstr, livedesk::get_livedesk_stat_maxpostsession('USER', NULL, $USER->id));
-    $table->data[] = array($averageanswerdelaystr, livedesk::get_livedesk_stat_avganswertime('USER', NULL, $USER->id));
+    $table->data[] = array($attendedpostscountstr, livedesk::get_livedesk_stat_attendedposts('USER', null, $USER->id));
+    $table->data[] = array($maxattendedpostsbysessionstr, livedesk::get_livedesk_stat_maxpostsession('USER', null, $USER->id));
+    $table->data[] = array($averageanswerdelaystr, livedesk::get_livedesk_stat_avganswertime('USER', null, $USER->id));
     echo html_writer::table($table);
 }

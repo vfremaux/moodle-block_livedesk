@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,7 +25,8 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once('globals.php');
+require_once($CFG->dirroot.'/blocks/livedesk/classes/globals.php');
+require_once($CFG->dirroot.'/blocks/livedesk/classes/livedesk.class.php');
 
 class livedesk {
 
@@ -36,49 +36,59 @@ class livedesk {
     * @param mixed $blockinstanceid
     * @param string $status
     */
-    public static function load_liveentries($blockinstanceid, $status = 'all'){
-        global $CFG, $STATUS_ARRAY, $SESSION, $USER, $DB, $OUTPUT;
+    public static function load_liveentries($blockinstanceid, $status = 'all') {
+        global $CFG, $STATUS_ARRAY, $STATUS_ARRAY_TITLES, $SESSION, $USER, $DB, $OUTPUT;
 
-        // first get the linked livedesk instance 
+        // First get the linked livedesk instance.
         $livedesk_instance = $DB->get_record('block_livedesk_blocks', array('blockid' => $blockinstanceid));
-        $livedesk_instanceid = $livedesk_instance->livedeskid; 
-        // load liveinstance monitored plugins 
+        $livedesk_instanceid = $livedesk_instance->livedeskid;
+
+        // Load liveinstance monitored plugins.
         $monitored_plugins = $DB->get_records('block_livedesk_modules', array('livedeskid' => $livedesk_instanceid));
         $monitored_plugins_cs = '';
-        if ($monitored_plugins){
+        if ($monitored_plugins) {
             $monitored_plugins_arr = array();
-            foreach($monitored_plugins as $p){
-                $monitored_plugins_arr[] = $p->cmid;  
+            foreach ($monitored_plugins as $p) {
+                $monitored_plugins_arr[] = $p->cmid;
             }
             $monitored_plugins_cs = implode("','", $monitored_plugins_arr);
         }
-        // compute mstatus filtering in session
+
+        if (!isset($SESSION->livedesk)) {
+            return;
+        }
+
+        // Compute mstatus filtering in session.
         $stateexcludes = array();
-        if (!$SESSION->livedesk->show_answered){
+        if (!$SESSION->livedesk->show_answered) {
             $stateexcludes[] = " mstatus != 'answered' ";
         }
-        if (!$SESSION->livedesk->show_locked){
-            $stateexcludes[] = " (mstatus != 'locked' OR lockedby = {$USER->id}) "; // I need keep my own locks
+        if (!$SESSION->livedesk->show_locked) {
+            $stateexcludes[] = " (mstatus != 'locked' OR lockedby = {$USER->id}) "; // I need keep my own locks.
         }
-        if (!$SESSION->livedesk->show_discarded){
+        if (!$SESSION->livedesk->show_discarded) {
             $stateexcludes[] = " mstatus != 'discarded' ";
         }
         $statesessionclause = '';
-        if (!empty($stateexcludes)){
+        if (!empty($stateexcludes)) {
             $statesessionclause = " (".implode(" AND ", $stateexcludes).") AND ";
         }
         $sql = "
-            SELECT 
+            SELECT
                 q.*,
                 cm.module,
                 cm.instance
-            FROM 
+            FROM
                 {block_livedesk_queue} q
             JOIN
+                {forum_posts} fp
+            ON
+                fp.id = q.itemid
+            JOIN
                 {course_modules} cm
-            ON 
+            ON
                 cm.id = q.cmid
-              WHERE 
+              WHERE
                   cmid IN ('{$monitored_plugins_cs}') AND
                   $statesessionclause
                   mstatus != 'deleted'
@@ -86,23 +96,19 @@ class livedesk {
                   timecreated DESC
         ";
         $entries = $DB->get_records_sql($sql);
-        //we now form the xml for the grid.
+
+        // We now form the xml for the grid.
         header("Content-Type:text/xml");
         print('<?xml version="1.0" encoding="utf-8" ?>');
         print("<rows>");
-        /*
-        print("<debug>");
-        echo " ".$statesessionclause;
-        print("</debug>");
-        */
 
-        if(!empty($entries)){
-            foreach ($entries as $entry){
+        if (!empty($entries)) {
+            foreach ($entries as $entry) {
 
                 $operator = '';
-                
+
                 $module = $DB->get_record('modules', array('id' => $entry->module));
-                if ($moduleinstance = $DB->get_record($module->name, array('id' => $entry->instance))){
+                if ($moduleinstance = $DB->get_record($module->name, array('id' => $entry->instance))) {
                     $entry->seen = livedesk::livedesk_get_seen_information($module, $moduleinstance, $entry->itemid);
                 } else {
                     $entry->seen = 0;
@@ -111,24 +117,27 @@ class livedesk {
                 }
                 $caller = $DB->get_record('user', array('id' => $entry->callerid));
                 $classes = $entry->mstatus;
-                $bg_color = '';  
-                if ($entry->mstatus == 'answered'){
+                $bg_color = '';
+                if ($entry->mstatus == 'answered') {
                     $opuser = $DB->get_record('user', array('id' => $entry->answerby));
                     $operator = $opuser->firstname.' '.$opuser->lastname;
-                    $bg_color = '#DDF0FF';  
+                    $bg_color = '#ddf0ff';
                 }
-                if ($entry->locked){
+                if ($entry->locked) {
                     $opuser = $DB->get_record('user', array('id' => $entry->lockedby));
                     $operator .= ' [<b><span style="color:red">'.$opuser->firstname.' '.$opuser->lastname.'</span></b>]';
-                    $icon = $STATUS_ARRAY['locked'];  
-                    $bg_color = '#ffc0c0';  
+                    $icon = $STATUS_ARRAY['locked'];
+                    $bg_color = '#ffc0c0';
                     $classes .= ' locked';
+                    $statusimg = '<a title="'.$STATUS_ARRAY_TITLES['locked'].'"><img src="pix/'.$icon.'" alt="'.$STATUS_ARRAY_TITLES['locked'].'" /></a>';
                 } else {
-                    $icon = $STATUS_ARRAY[$entry->mstatus]; 
+                    $icon = $STATUS_ARRAY[$entry->mstatus];
+                    $statusimg = '<a title="'.$STATUS_ARRAY_TITLES[$entry->mstatus].'"><img src="pix/'.$icon.'" alt="'.$STATUS_ARRAY_TITLES[$entry->mstatus].'" /></a>';
                 }
-                $seen_img = " <img src='pix/eye.png' />";         
-                if (!$entry->seen){
-                    $seen_img = " <img src='pix/eye-half.png' />";     
+
+                $seenimg = " <img src='pix/eye.png' />";
+                if (!$entry->seen) {
+                    $seenimg = " <img src='pix/eye-half.png' />";
                     $classes .= ' unseen';
                 }
                 $longmessage = htmlentities(shorten_text($entry->message, 200));
@@ -136,343 +145,395 @@ class livedesk {
                 $modname = get_string('modulename', $module->name);
                 $modcourseshort = $DB->get_field('course', 'shortname', array('id' => $moduleinstance->course));
                 $modpix = $OUTPUT->pix_icon('icon', '['.$modcourseshort.'] '.$modname, $module->name); 
-                $dimmedpre = ($entry->mstatus == 'discarded') ? '<div class="dimmed">' : '' ;
-                $dimmedpost = ($entry->mstatus == 'discarded') ? '</div>' : '' ;
-                $row =  '<row id="liveentry_'.$entry->id.'" bgColor="'.$bg_color.'"> 
+                $dimmedpre = ($entry->mstatus == 'discarded') ? '<div class="dimmed">' : '';
+                $dimmedpost = ($entry->mstatus == 'discarded') ? '</div>' : '';
+                $row =  '<row id="liveentry_'.$entry->id.'" bgColor="'.$bg_color.'">
                 <userdata name="status" >'.$entry->mstatus.'</userdata>
                 <userdata name="notified">'.$entry->notified.'</userdata>
                 <userdata name="messageid">'.$entry->id.'</userdata>
                 <userdata name="itemid">'.$entry->itemid.'</userdata>
                 <userdata name="cmid">'.$entry->cmid.'</userdata>
                 <userdata name="timecreated">'.$entry->timecreated.'</userdata>
-                <cell  bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.$entry->id.$dimmedpost.']]>    </cell>  
-                <cell  bgColor="'.$bg_color.'"><![CDATA['.'<img src="pix/'.$icon.'"/>'.$seen_img.']]>    </cell>   
-                <cell  bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.livedesk::encoding_protect($message).$dimmedpost.']]>    </cell>  
-                <cell  bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.fullname($caller).$dimmedpost.']]>    </cell> 
-                <cell  bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.date('d.m.Y h:i',$entry->timecreated).$dimmedpost.']]>    </cell>  
-                <cell  bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.'[ '.$modpix.' '.mb_convert_encoding($moduleinstance->name, 'UTF8', 'auto').']'.$dimmedpost.' ]]>    </cell> 
-                <cell  bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.$operator.$dimmedpost.' ]]>    </cell> 
-                </row>' ;
+                <cell bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.$entry->id.$dimmedpost.']]></cell>
+                <cell bgColor="'.$bg_color.'"><![CDATA['.$statusimg.$seenimg.']]></cell>
+                <cell bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.livedesk::encoding_protect($message).$dimmedpost.']]></cell>
+                <cell bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.fullname($caller).$dimmedpost.']]></cell>
+                <cell bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.date('d.m.Y h:i',$entry->timecreated).$dimmedpost.']]></cell>
+                <cell bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.'[ '.$modpix.' '.mb_convert_encoding($moduleinstance->name, 'UTF8', 'auto').']'.$dimmedpost.' ]]></cell>
+                <cell bgColor="'.$bg_color.'"><![CDATA['.$dimmedpre.$operator.$dimmedpost.' ]]></cell>
+                </row>';
                 print($row);
              }
          } else {
-        //     print('<row></row>');
+         //     echo('<row></row>');
          }
+
          $sql = "
-             UPDATE 
-                 {block_livedesk_queue} 
-             SET 
+             UPDATE
+                 {block_livedesk_queue}
+             SET
                  notified = 1
          ";
         // execute_sql($sql,false);
         echo '</rows>';
     }
 
-    /**
-    *
-    * @param int $messageid
-    *
-    */        
-    static function set_message_status($messageid, $status){
-        global $DB;
-        
-        $message = $DB->get_record('block_livedesk_queue', array('id' => $messageid));
-        if(!$message){
-              return false;
-        }
-        $message->mstatus = $status;
-        return $DB->update_record('block_livedesk_queue', addslash_object($message));
-       }
+    public static function get_reader() {
+        return '\core\log\sql_reader';
+    }
 
     /**
-    *
-    * @param int $messageid
-    *
-    */        
-    static function unlock_message($messageid){
+     *
+     * @param int $messageid
+     *
+     */
+    static function set_message_status($messageid, $status) {
         global $DB;
-        
+
+        return $DB->set_field('block_livedesk_queue', 'mstatus', $message, array('id' => $messageid));
+    }
+
+    /**
+     *
+     * @param int $messageid
+     *
+     */
+    static function unlock_message($messageid) {
+        global $DB;
+
         $message = $DB->get_record('block_livedesk_queue', array('id' => "$messageid"));
         $message->locked = 0;
-        if (!$message->mstatus != 'answered'){
+        if (!$message->mstatus != 'answered') {
             $message->lockedby = 0;
             $message->answeredby = 0;
             $message->locktime = 0;
         }
         $DB->update_record('block_livedesk_queue', $message);
-       }
+    }
+
     /**
-    * get livedesk statistics
-    * 
-    * @param mixed $level  : [SYSTEM,INSTANCE,USER]
-    * @param mixed $instance_id, livedesk instance id (Only needed when level is instance)
-    * @param mixed $user_id, livedesk agent id (only needed when leve is USER)
-    */
-    static function get_livedesk_stat_attendedposts($level, $blockid = null, $userid = null){  
+     * get livedesk statistics
+     *
+     * @param mixed $level  : [SYSTEM,INSTANCE,USER]
+     * @param mixed $instance_id, livedesk instance id (Only needed when level is instance)
+     * @param mixed $user_id, livedesk agent id (only needed when leve is USER)
+     */
+    static function get_livedesk_stat_attendedposts($level, $blockid = null, $userid = null) {
         global $CFG, $DB;
 
         $where = '';
-        if($level == 'SYSTEM'){
-            $where = ' WHERE answerby > 0 AND ';  
-        } elseif($level == 'INSTANCE'){
-            if(!$blockid){
+        if ($level == 'SYSTEM') {
+            $where = ' WHERE answerby > 0 AND ';
+        } else if ($level == 'INSTANCE') {
+            if (!$blockid) {
                 print_error("instance_id must be provided");
             }
             $sql = "
-                SELECT DISTINCT 
-                    cmid 
-                FROM 
-                    {block_livedesk_modules} mp, 
-                    {block_livedesk_blocks} br 
-                WHERE 
+                SELECT DISTINCT
+                    cmid
+                FROM
+                    {block_livedesk_modules} mp,
+                    {block_livedesk_blocks} br
+                WHERE
                     br.blockid = {$blockid} AND
                     br.livedeskid = mp.livedeskid
             ";
             $monitoredplugins = $DB->get_records_sql($sql);
-            if($monitoredplugins){
+            if ($monitoredplugins) {
                 $mp = array();
-                foreach($monitoredplugins as $p){
-                    $mp[] = $p->cmid;  
+                foreach ($monitoredplugins as $p) {
+                    $mp[] = $p->cmid;
                 }
-                $mp_cs = implode("','",$mp);
-            } 
+                $mp_cs = implode("','", $mp);
+            }
             $where = " WHERE cmid IN ('{$mp_cs}') AND answerby > 0 AND ";
-        } elseif($level == 'USER'){
-              if(!$userid){
+        } else if ($level == 'USER') {
+              if (!$userid) {
                   print_error("Internal error : userid must be provided");
               }
-              $where = " WHERE answerby = ".$userid." AND" ;
+              $where = " WHERE answerby = ".$userid." AND";
         }
         $sql = "
-              SELECT 
-                  COUNT(*) AS counter 
-              FROM 
-                  {block_livedesk_queue} 
+              SELECT
+                  COUNT(*) AS counter
+              FROM
+                  {block_livedesk_queue}
               $where
-                  (mstatus = 'answered' OR 
-                  mstatus = 'discarded') 
+                  (mstatus = 'answered' OR
+                  mstatus = 'discarded')
         ";
         $result = $DB->get_record_sql($sql);
-        return $result->counter;  
+        return $result->counter;
     }
 
-    static function get_livedesk_stat_maxpostsession($level, $blockid = null, $userid = null){  
+    /**
+     *
+     */
+    static function get_livedesk_stat_maxpostsession($level, $blockid = null, $userid = null) {
         global $CFG, $DB;
 
-        $where = "";
-        if ($level == "SYSTEM"){
-            $where = " WHERE answerby > 0 AND ";  
-        } elseif($level == 'INSTANCE') {
-            if(!$blockid){
+        $where = '';
+        if ($level == 'SYSTEM') {
+            $where = " WHERE answerby > 0 AND ";
+        } else if ($level == 'INSTANCE') {
+            if (!$blockid) {
                   print_error("instance_id must be provided");
             }
             $sql = "
-                SELECT DISTINCT 
-                    cmid 
-                FROM 
-                    {block_livedesk_modules} mp, 
-                    {block_livedesk_blocks} br 
-                WHERE 
+                SELECT DISTINCT
+                    cmid
+                FROM
+                    {block_livedesk_modules} mp,
+                    {block_livedesk_blocks} br
+                WHERE
                     br.blockid = {$blockid} AND
                     br.livedeskid = mp.livedeskid
             ";
             $monitoredplugins = $DB->get_records_sql($sql);
-            if($monitoredplugins){
+            if ($monitoredplugins) {
                 $mp = array();
-                foreach($monitoredplugins as $p) {
-                    $mp[] = $p->cmid;  
+                foreach ($monitoredplugins as $p) {
+                    $mp[] = $p->cmid;
                 }
-                $mp_cs = implode("','",$mp);
+                $mp_cs = implode("','", $mp);
             } 
         $where = " WHERE cmid IN ('{$mp_cs}') AND answerby > 0 AND ";
 
-        } else if($level == 'USER'){
-            if(!$userid){
+        } else if ($level == 'USER') {
+            if (!$userid) {
                 print_error("userid must be provided");
             }
-            $where = " WHERE answerby = {$userid} AND " ;
+            $where = " WHERE answerby = {$userid} AND ";
         }
         $sql = "
-              SELECT 
-                  max(y.counter) AS maxcounter 
+              SELECT
+                  max(y.counter) AS maxcounter
               FROM (
-                  SELECT 
-                      COUNT(*) AS counter 
-                  FROM 
-                      {block_livedesk_queue} 
-                      ".$where." 
-                      (mstatus = 'answered' OR mstatus = 'discarded') 
-                  GROUP BY 
-                      ans_session ) y 
+                  SELECT
+                      COUNT(*) AS counter
+                  FROM
+                      {block_livedesk_queue}
+                      ".$where."
+                      (mstatus = 'answered' OR mstatus = 'discarded')
+                  GROUP BY
+                      ans_session ) y
         ";
         $result = $DB->get_record_sql($sql);
-        if ($result){
+
+        if ($result) {
             $max =  0 + $result->maxcounter;
         } else {
             $max = 0;
         }
-        return $max;            
+        return $max;
     }
 
     /**
-    *
-    * @param int $level
-    * @param int $blockid
-    * @param int $userid
-    */ 
-    static function get_livedesk_stat_avganswertime($level, $blockid = null, $userid = null){  
+     *
+     * @param int $level
+     * @param int $blockid
+     * @param int $userid
+     */
+    static function get_livedesk_stat_avganswertime($level, $blockid = null, $userid = null) {
         global $CFG, $DB;
 
         $where = '';
-        if($level == 'SYSTEM'){
-            $where = ' WHERE answerby > 0 AND ';  
-        } elseif ($level == 'INSTANCE'){
-            if(!$blockid){
+        if ($level == 'SYSTEM') {
+            $where = ' WHERE answerby > 0 AND ';
+        } else if ($level == 'INSTANCE') {
+            if (!$blockid) {
                 print_error("instance_id must be provided");
             }
 
             $sql = "
-                SELECT DISTINCT 
+                SELECT DISTINCT
                     cmid
-                FROM 
-                    {block_livedesk_modules} mp, 
-                    {block_livedesk_blocks} br 
-                WHERE 
+                FROM
+                    {block_livedesk_modules} mp,
+                    {block_livedesk_blocks} br
+                WHERE
                     br.blockid = {$blockid} AND
                     br.livedeskid = mp.livedeskid
             ";
             $monitoredplugins = $DB->get_records_sql($sql);
-            if($monitoredplugins){
+
+            if ($monitoredplugins) {
                 $mp = array();
-                foreach($monitoredplugins as $p){
-                    $mp[] = $p->cmid;  
+                foreach ($monitoredplugins as $p) {
+                    $mp[] = $p->cmid;
                 }
-                $mp_cs = implode("','",$mp);
-            } 
+                $mp_cs = implode("','", $mp);
+            }
             $where = " WHERE answerby > 0 AND cmid IN ('{$mp_cs}') AND ";
-        } else if($level == 'USER') {
-            if(!$userid) {
+        } else if ($level == 'USER') {
+            if (!$userid) {
                 print_error("userid must be provided");
             }
-            $where = " WHERE answerby = {$userid} AND" ;
+            $where = " WHERE answerby = {$userid} AND";
         }
+
         $sql = "
-              SELECT 
+              SELECT
                   id,
                   timeanswered,
-                  timecreated 
-              FROM 
-                  {block_livedesk_queue} 
-                  ".$where." 
+                  timecreated
+              FROM
+                  {block_livedesk_queue}
+                  ".$where."
                   (mstatus = 'answered' OR mstatus = 'discarded')
         ";
         $results = $DB->get_records_sql($sql);
+
         $sum = 0;
         $i = 0;
         $avg = 0;
-        if ($results){  
-            foreach($results as $r){
-                if ($r->timeanswered == 0){
-                     continue; 
+
+        if ($results) {
+            foreach ($results as $r) {
+                if ($r->timeanswered == 0) {
+                     continue;
                 }
                 $i++;
-                $sum = $avg + $r->timeanswered - $r->timecreated;                  
+                $sum = $avg + $r->timeanswered - $r->timecreated;
             }
 
-            if($i > 0){
-                  $avg = $sum/$i; //secs avg
+            if ($i > 0) {
+                  $avg = $sum / $i; // Seconds avg.
             } else {
                 $avg = 0;
             }
         }
-        return format_time(floor($avg));      
-    }
-    /**
-    *
-    * @param int $courseid
-    * @param int $bid the block instance id
-    * @param int $livedeskid the livedesk instance id
-    */  
-    static function keep_me_alive($courseid, $bid, $livedeskid){  
-        global $USER;
-        add_to_log($courseid, 'livedesk', 'run', 'run.php', $livedeskid, $bid, $USER->id);   
+        return format_time(floor($avg));
     }
 
-    static function get_online_users_count($blockid){
+    /**
+     *
+     * @param int $livedeskid the livedesk instance id
+     */
+    static function keep_me_alive($livedeskid) {
+        global $DB, $SESSION;
+
+        if (!isset($SESSION->livedesk)) {
+            $SESSION->livedesk = new StdClass;
+        }
+
+        $SESSION->livedesk->session = time();
+
+        $livedesk = $DB->get_record('block_livedesk_instance', array('id' => $livedeskid));
+        $event = block_livedesk\event\livedesk_run::create_from_livedesk($livedesk);
+        $event->trigger();
+    }
+
+    /**
+     * Count how many conntected operators in livedesk backoffice.
+     */
+    static function get_online_users_count($blockid) {
         global $CFG, $USER, $DB;
 
-        $timetoshowusers = 300; //Seconds default 
-        $timefrom = 100 * floor((time()-$timetoshowusers) / 100); // Round to nearest 100 seconds for better query cache
+        $timetoshowusers = 300; // Seconds default.
+        $timefrom = 100 * floor((time() - $timetoshowusers) / 100); // Round to nearest 100 seconds for better query cache.
         $livedesk_reference = $DB->get_record('block_livedesk_blocks', array('blockid' => $blockid));
         $livedeskid = $livedesk_reference->livedeskid;
-        //get the involved courses for this livedesk instance 
+
+        // Get the involved courses for this livedesk instance.
         $sql = "
-            SELECT DISTINCT 
-                course 
-            FROM 
-                {course_modules} 
-            WHERE 
-                id IN ( 
-                    SELECT DISTINCT 
-                        cmid 
-                    FROM 
-                        {block_livedesk_modules} mp, 
-                        {block_livedesk_blocks} br 
-                    WHERE 
+            SELECT DISTINCT
+                course
+            FROM
+                {course_modules}
+            WHERE
+                id IN (
+                    SELECT DISTINCT
+                        cmid
+                    FROM
+                        {block_livedesk_modules} mp,
+                        {block_livedesk_blocks} br
+                    WHERE
                         br.blockid = {$blockid} AND
-                        br.livedeskid = mp.livedeskid 
+                        br.livedeskid = mp.livedeskid
                 )
         ";
-        //  print($sql );
         $records = $DB->get_records_sql($sql);
-        if($records){
-            foreach ($records as $rec){
+
+        if ($records) {
+            foreach ($records as $rec) {
                 $courses_arr[] = $rec->course;
             }
-        } else {                         
-            $results['users_count'] = 0; //$usercount;
-            $results['attenders_count'] = 0; //$attenders_count;
-            return $results;            
+        } else {
+            $results['users_count'] = 0; // User count.
+            $results['attenders_count'] = 0; // Attenders count.
+            return $results;
         }
-        $courses_csv = implode(",",$courses_arr) ;
+
+        $courses_csv = implode(',', $courses_arr) ;
         $select = "
-            SELECT 
-                u.id, 
-                u.username, 
-                u.firstname, 
-                u.lastname, 
-                u.picture, 
+            SELECT
+                u.id,
+                u.username,
+                u.firstname,
+                u.lastname,
+                u.picture,
                 max(ul.timeaccess) AS lastaccess ";
+
         $from = "FROM {user_lastaccess} ul,
-                      {user} u
-                      ";
+                      {user} u ";
+
         $where =  "WHERE ul.timeaccess > $timefrom
                    AND u.id = ul.userid
-                   AND ul.courseid in ($courses_csv)
-                  ";
+                   AND ul.courseid in ($courses_csv) ";
+
         $order = "ORDER BY lastaccess DESC ";
+
         $groupby = "GROUP BY u.id, u.username, u.firstname, u.lastname, u.picture ";
+
         $minutes  = floor($timetoshowusers/60);
 
         // $SQL = $select . $from . $where . $groupby . $order;
 
+        $logmanager = get_log_manager();
+        $readers = $logmanager->get_readers(livedesk::get_reader());
+        $reader = reset($readers);
+
+        if (empty($reader)) {
+            return false; // No log reader found.
+        }
+
+        if ($reader instanceof \logstore_standard\log\store) {
+
+            $logtable = '{logstore_standard_log}';
+            $timeattr = 'timecreated';
+            $moduleclause = " component = 'block_livedesk' AND ";
+            $infoclause = " objectid = {$livedeskid} ";
+
+        } else if ($reader instanceof \logstore_legacy\log\store) {
+
+            $logtable = '{log}';
+            $timeattr = 'time';
+            $moduleclause = " module = 'livedesk' AND ";
+            $infoclause = " info = {$livedeskid} ";
+
+        } else {
+            return;
+        }
+
         $usercount = $DB->count_records_sql("SELECT COUNT(DISTINCT(u.id)) $from $where");
         $sql2 = "
-            SELECT DISTINCT 
-                userid 
-            FROM 
-                {log} 
+            SELECT DISTINCT
+                userid
+            FROM
+                {$logtable}
             WHERE
-                time > $timefrom AND 
-                action = 'run' AND 
-                module = 'livedesk' AND 
-                info = {$livedeskid}
+                $timeattr > $timefrom AND
+                action = 'run' AND
+                {$moduleclause}
+                {$infoclause}
         ";
+
         $result2 = $DB->get_records_sql($sql2);
-        if($result2){
+        if ($result2) {
             $attenders_count = count($result2);
-            foreach($result2 as $uid => $notused){
-                $user = $DB->get_record('user', array('id' => $uid), 'id,firstname,lastname');
+            foreach ($result2 as $uid => $notused) {
+                $user = $DB->get_record('user', array('id' => $uid), 'id,'.get_all_user_name_fields(true, ''));
                 $attender = new StdClass;
                 $attender->class = ($user->id == $USER->id) ? 'isme' : 'isnotme' ;
                 $attender->name = fullname($user);
@@ -494,7 +555,7 @@ class livedesk {
         global $CFG, $DB;
 
         $sql = "
-            SELECT 
+            SELECT
                 mp.cmid,
                 mp.livedeskid,
                 m.name as plugintype,
@@ -502,12 +563,12 @@ class livedesk {
             FROM 
                 {block_livedesk_modules} mp,
                 {course_modules} cm,
-                {modules} m 
-            WHERE  
+                {modules} m
+            WHERE
                 cm.id = mp.cmid AND
                 m.id = cm.module AND
                 mp.livedeskid = {$livedeskid}
-          ";
+        ";
         $monitoredplugins = $DB->get_records_sql($sql);
         $plugins_arr = array();
         if ($monitoredplugins) {
@@ -563,13 +624,13 @@ class livedesk {
                // This is a discard before date.
                $discard_date_linux = strtotime($discard_date); 
                $sql = "
-                   UPDATE 
-                       {block_livedesk_queue} 
-                    SET 
-                        mstatus = 'discarded' 
-                    WHERE 
+                   UPDATE
+                       {block_livedesk_queue}
+                    SET
+                        mstatus = 'discarded'
+                    WHERE
                         timecreated < {$discard_date_linux}
-                    AND 
+                    AND
                         mstatus = 'new'
                ";
                $DB->execute($sql);
@@ -608,21 +669,23 @@ class livedesk {
 
         $livedesks_csv = implode("','", $livedesks_arr);
         $sql = "
-               SELECT 
+               SELECT
                    q.*,
                    ldm.livedeskid
-            FROM 
+            FROM
                   {block_livedesk_queue} q,
-                  {block_livedesk_modules} ldm 
-               WHERE 
-                  q.cmid = ldm.cmid 
-            AND 
+                  {block_livedesk_modules} ldm
+               WHERE
+                  q.cmid = ldm.cmid
+            AND
                    ldm.livedeskid IN ('{$livedesks_csv}') AND
                    q.mstatus NOT IN ('deleted', 'discarded', 'locked', 'answered')
-            AND 
+            AND
                    q.notified = 0
-           ";
+        ";
+
         $livedeskqueues = array();
+
         if ($messages = $DB->get_records_sql($sql)) {
             foreach ($messages as $m) {
                 $livedeskqueues[$m->livedeskid][$m->id] = $m->message;
@@ -630,18 +693,18 @@ class livedesk {
         }
 
         if (!empty($livedeskqueues)) {
-             foreach ($livedeskqueues as $ldid => $ldq) {
-                 $livedesk = $DB->get_record('block_livedesk_instance', array('id' => $ldid));
-                 $livedeskwin = livedesk::get_livedesk_window_name($livedesk);
-                 $notification = new StdClass();
-                 $notification->message = '';
-                 $notification->id = $ldid;
+            foreach ($livedeskqueues as $ldid => $ldq) {
+                $livedesk = $DB->get_record('block_livedesk_instance', array('id' => $ldid));
+                $livedeskwin = livedesk::get_livedesk_window_name($livedesk);
+                $notification = new StdClass();
+                $notification->message = '';
+                $notification->id = $ldid;
                 // Checking user can access from at least one block.
-                 $accessblockid = livedesk::find_block_by_instance_user($livedesk->id);
+                $accessblockid = livedesk::find_block_by_instance_user($livedesk->id);
 
-                 if (!$accessblockid) {
-                     continue;
-                 }
+                if (!$accessblockid) {
+                    continue;
+                }
 
                 // Checking opening/closing time of the livedesk.
                 if (!empty($livedesk->servicestarttime) && !empty($livedesk->serviceendtime)) {
@@ -653,26 +716,35 @@ class livedesk {
                         continue;
                     }
                 }
+
                 $num = count($ldq);
-                 $runurl = new moodle_url('/blocks/livedesk/run.php', array('bid' => $accessblockid));
-                 if ($num <= 3) {
-                     $notification = new StdClass();
-                     $mesbody = get_string('messagesinqueue', 'block_livedesk', $livedesk->name);
-                     $notification->message .= '<a class="livedesk-notification-link" href="'.$runurl.'" target="'.$livedeskwin.'">'.$mesbody.'</a><br/>';
-                     foreach($ldq as $q) {
-                         $notification->message .= $q.'<br/>';
-                     }
-                 } else {
+                $runurl = new moodle_url('/blocks/livedesk/run.php', array('bid' => $accessblockid));
+                if ($num <= 3) {
+                    $notification = new StdClass();
+                    $mesbody = get_string('messagesinqueue', 'block_livedesk', $livedesk->name);
+                    $notification->message = '<a class="livedesk-notification-link" href="'.$runurl.'" target="'.$livedeskwin.'">'.$mesbody.'</a><br/>';
+                    foreach ($ldq as $q) {
+                        $notification->message .= $q.'<br/>';
+                    }
+                } else {
                      // Globalize message.
                      $e = new StdClass;
                      $e->count = $num;
                      $e->queue = $livedesk->name;
                      $mesbody = get_string('morethanmessagesinqueue', 'block_livedesk', $e);
                      $notification->message .= '<a class="livedesk-notification-link" href="'.$runurl.'" target="'.$livedeskwin.'">'.$mesbody.'</a><br/>';
-                 }
-                 $messages_arr[] = $notification;
-             }
-         }
+                }
+                $messages_arr[] = $notification;
+            }
+        }
+
+        // Test purpose.
+        /*
+        $notification = new StdClass();
+        $notification->message = 'Test message';
+        $notification->id = $ldid;
+        $messages_arr[] = $notification;
+        */
 
         if (!empty($messages_arr)) {
             return $messages_arr;
@@ -681,27 +753,45 @@ class livedesk {
     }
 
     /**
-     * extracts from log the livedesks the user has recent activity in
+     * extracts from log the livedesks the user has recent activity in.
      *
      * @param int $userid the user required for check
-     * @param int $min_span the back delay from current time
+     * @param int $min_span the back delay from current time (minutes)
      */
-    public static function get_running_livedesks($userid, $mins_span = 50) {
+    public static function get_running_livedesks($userid, $minsspan = 50) {
         global $CFG, $DB;
 
         $current_time = time();
 
+        $logmanager = get_log_manager();
+        $readers = $logmanager->get_readers(self::get_reader());
+        $reader = reset($readers);
+
+        if ($reader instanceof \logstore_standard\log\store) {
+            $infofield = 'objectid';
+            $timefield = 'timecreated';
+            $logtable = 'logstore_standard_log';
+            $componentclause = 'component = "block_livedesk" AND ';
+        } else if ($reader instanceof \logstore_legacy\log\store) {
+            $infofield = 'info';
+            $timefield = 'time';
+            $logtable = 'log';
+            $componentclause = 'module = "livedesk" AND ';
+        } else {
+            return;
+        }
+
         // Timespan is 5 mins.
         $sql = "
             SELECT 
-                DISTINCT info
+                DISTINCT $infofield as info
             FROM
-                {log}
+                {{$logtable}}
             WHERE
                 userid = {$userid} AND
-                module = 'livedesk' AND
+                $componentclause
                 action = 'run' AND
-                time >= ".($current_time - ($mins_span*60))." 
+                $timefield >= ".($current_time - ($minsspan*60))." 
         " ;
         $livedesks_arr = array();
         $results = $DB->get_records_sql($sql);
@@ -725,7 +815,7 @@ class livedesk {
         $monitorable_plugins = array('forum');
         // Add integrator defined plugins.
         if (@$CFG->livedesk_plugins) {
-            $monitorable_plugins = array_merge($monitorable_plugins, explode(',', $CFG->livedesk_plugins));            
+            $monitorable_plugins = array_merge($monitorable_plugins, explode(',', $CFG->livedesk_plugins));
         }
         return $monitorable_plugins;
     }
@@ -747,7 +837,11 @@ class livedesk {
         $coursecontext = context_course::instance($courseid);
         $candidatesids = array_keys($possible);
         $candidates_ids_cs = implode("','", $candidatesids);
-        $select = " id IN ('$candidates_ids_cs') AND blockname = 'livedesk' AND parentcontextid = '{$coursecontext->id}' ";
+        $select = "
+            id IN ('$candidates_ids_cs') AND
+            blockname = 'livedesk' AND
+            parentcontextid = '{$coursecontext->id}'
+        ";
         if ($candidates = $DB->get_records_select('block_instances', $select)) {
             $blockids = array_keys($candidates);
             return $blockids[0];
@@ -766,7 +860,7 @@ class livedesk {
             $userid = $USER->id;
         }
 
-        if (!$possible = $DB->get_records_menu('block_livedesk_blocks', array('livedeskid' => $livedeskid), '', 'blockid,id')) {
+        if (!$possible = $DB->get_records_menu('block_livedesk_blocks', array('livedeskid' => $livedeskid), '', 'blockid, id')) {
             return false;
         }
         foreach (array_keys($possible) as $blockid) {

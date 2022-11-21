@@ -40,11 +40,14 @@ class block_livedesk_edit_form extends block_edit_form {
         $mform->addElement('select', 'config_livedeskid', get_string('livedeskref', 'block_livedesk'), $livedeskinstancesoptions);
 
         // Print create instance side
-        $location = $CFG->wwwroot."/blocks/livedesk/edit_instance.php?livedeskid=0";
+        $location = new moodle_url('/blocks/livedesk/edit_instance.php', array('livedeskid' => 0));
 
         $system_context = context_system::instance();
         if (has_capability('block/livedesk:createlivedesk', $system_context)) {
-            $html = '<input type="button" name="create_new_instance" value="'.get_string('createnewinstance', 'block_livedesk').'" onClick="window.location=\''.$location.'\'"  />';
+            $newinstancestr = get_string('createnewinstance', 'block_livedesk');
+            $html = '<a href="'.$location.'">';
+            $html .= '<input type="button" name="create_new_instance" value="'.$newinstancestr.'"  />';
+            $html .= '</a>';
         }
 
         $mform->addELement('html', $html);

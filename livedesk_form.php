@@ -91,10 +91,13 @@ class livedesk_form extends moodleform {
         $mform->addElement('html', $this->get_monitoredplugins_list());
 
         $mform->addElement('hidden', 'livedeskid');
+        $mform->setType('livedeskid', PARAM_INT);
         $mform->addElement('hidden', 'course');
+        $mform->setType('course', PARAM_INT);
         $mform->addElement('hidden', 'bid');
+        $mform->setType('bid', PARAM_INT);
 
-        $mform->addElement('checkbox', 'sendnotification', get_string('sendnotification', 'block_livedesk'), '', 0);
+        $mform->addElement('advcheckbox', 'sendnotification', get_string('sendnotification', 'block_livedesk'), '', 0);
 
         $mform->addElement('text', 'notificationtitle', get_string('notificationtitle', 'block_livedesk'), array('size' => 80));
         $mform->setType('notificationtitle', PARAM_TEXT);

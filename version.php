@@ -25,11 +25,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2016012100;        // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2018042700;        // Requires this Moodle version.
+$plugin->version   = 2019120911;        // The current plugin version (Date: YYYYMMDDXX).
+$plugin->requires  = 2020061500;        // Requires this Moodle version.
 $plugin->component = 'block_livedesk'; // Full name of the plugin (used for diagnostics).
-$plugin->release = '3.5.0 (build 2015010700)';
+$plugin->release = '3.9.0 (build 2019120911)';
 $plugin->maturity = MATURITY_STABLE;
+$plugin->supports = [38,39];
 
 // Non moodle attributes.
-$plugin->codeincrement = '3.5.0000';
+$plugin->codeincrement = '3.9.0000';
+$plugin->privacy = 'private';

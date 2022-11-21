@@ -25,35 +25,33 @@
 
 require_once('../../config.php');
 
-// fast access to style sheet
-echo '<link src="'.$CFG->wwwroot.'/blocks/livedesk/style.css" rel="styilesheet" type="text/css" />';
+$courseid = required_param('course', PARAM_INT);
+$livedeskid = required_param('livedeskid', PARAM_INT);
+$bid = required_param('bid', PARAM_INT);
+
+if (!$course = $DB->get_record('course', array('id' => $courseid))) {
+    print_error('coursemisconfig');
+}
+
+$livedesk = $DB->get_record('livedesk_instance', array('id' => $livedeskid));
+
+$params('courseid' => $courseid, 'livedeskid' => $livedeskid, 'bid' => $bid);
+$url = new moodle_url('/blocks/livedesk/discard_messages_before.php', $params);
+
+// fast access to style sheet.
+$PAGE->requires->css('/blocks/livedesk/style.css');
+$livedeskparams = block_livedesk_build_params($courseid, $livedesk, $bid);
+$livedeskparams['creationdate'] = date("d.m.Y h:i", $timecreated); // TODO Find where timecrreated comes from !!
+$PAGE->requires->js_call_amd('block_livedesk/livedeskinit', 'init', array($livedeskparams));
 
 require_login();
 
 $timecreated = required_param('date', PARAM_TEXT);
 
-echo '<div class="livedesk-popup">'.get_string('discard_before_txt','block_livedesk').'</div>';
-echo '<div class="livedesk-popup">'.get_string('discard_date','block_livedesk').' <input id="discard_date" type="text" value="'.date("d.m.Y h:i", $timecreated).'" /></div>';
-echo '<div class="livedesk-popup-button"><input id="discard_btn" type="button" value="'.get_string('confirmdiscard', 'block_livedesk').'" /></div>';
-echo '<script>';
-echo 'var wwwroot = \''.$CFG->wwwroot.'\'';
-echo 'var calendar = new dhtmlXCalendarObject("discard_date");';
-echo 'calendar.setDate(\''.date("d.m.Y h:i", $timecreated).'\');';
-echo 'calendar.setDateFormat("%d.%m.%Y %h:%i");';
-echo '
-$(\'#discard_btn\').click(function(){
-	discard_post_before_date();
-});
+$template = new StdClass;
+$template->discardbeforestr = get_string('discard_before_txt','block_livedesk');
+$template->discarddatestr = get_string('discard_date','block_livedesk');
+$template->timecreated = date("d.m.Y h:i", $timecreated);
+$template->confirmstr = get_string('confirmdiscard', 'block_livedesk');
 
-// wwwroot is set globally in javascript environment
-function discard_post_before_date(){
-   var ddate = $(\'#discard_date\').val();
-   url = wwwroot+\'/blocks/livedesk/serverside/service.php?action=discard_post\'+\'&bid=\'+bid+\'&livedeskid=\'+livedeskid+\'&courseid=\'+courseid+\'&date=\'+ddate;
-   $.post(url, function(data) {
-   window.discard_messages_window.close();
-    }); 
-}
-
-';
-echo '</script>';
-
+$OUTPUT->render_from_template('block_livedesk/discardpopup', $template);

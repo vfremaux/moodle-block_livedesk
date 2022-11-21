@@ -28,6 +28,14 @@ $STATUS_ARRAY = array('new'=>'mail.png',
                     'discarded'=>'discard_mail.png'
 );
 
+$STATUS_ARRAY_TITLES = array('new' => get_string('newmessage', 'block_livedesk'),
+                    'in_progress' => get_string('inprogress', 'block_livedesk'),
+                    'opened' => get_string('opened', 'block_livedesk'),
+                    'answered' => get_string('answered', 'block_livedesk'),
+                    'locked' => get_string('locked', 'block_livedesk'),
+                    'discarded' => get_string('discarded', 'block_livedesk')
+);
+
 //post status
 define('MAIL_STATUS_NEW','new');
 define('MAIL_STATUS_inprogress','inprogress');
