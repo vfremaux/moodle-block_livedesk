@@ -532,8 +532,10 @@ class livedesk {
         $result2 = $DB->get_records_sql($sql2);
         if ($result2) {
             $attenders_count = count($result2);
+            // M4.
+            $fields = \core_user\fields::for_name()->with_userpic()->get_required_fields();
             foreach ($result2 as $uid => $notused) {
-                $user = $DB->get_record('user', array('id' => $uid), 'id,'.get_all_user_name_fields(true, ''));
+                $user = $DB->get_record('user', array('id' => $uid), $fields);
                 $attender = new StdClass;
                 $attender->class = ($user->id == $USER->id) ? 'isme' : 'isnotme' ;
                 $attender->name = fullname($user);
